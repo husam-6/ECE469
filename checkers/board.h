@@ -10,6 +10,7 @@
 #include <chrono>
 #include <math.h>
 #include <stdlib.h>
+#include <queue>
 
 // For colors
 #define RESET   "\033[0m"
@@ -29,15 +30,15 @@
 #define BOLDMAGENTA "\033[1m\033[35m"      /* Bold Magenta */
 #define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
 #define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
-#define BLACK_BACK "\x1b[44m"
+#define BLUE_BACK "\x1b[44m"
 #define RED_BACK "\x1b[45m"
 #define EMPTY_BACK "\x1b[47m"
 
-
+// Class for storing the board state and pieces
 class CheckersBoard {
     public:
         // Function to print numbered list of move options
-        int * printOptions();
+        int printOptions(int turn);
 
         // Display board state
         void printBoard();
@@ -48,14 +49,30 @@ class CheckersBoard {
         CheckersBoard(std::string load_file = "none");
 
         private:
-            // Struct for coordinate values for legal moves
-            struct coords{
-                int x;
+            struct dataItem{
+                int x_initial;
+                int y_initial;
+                int x; 
                 int y;
             };
         
             // Returns pointer to array of valid coordinate moves for a given point
-            coords * getMoves(std::string &out);
+            // turn variable indicates blue player (-1) and red player (1)
+            // returns array of all valid moves for player
+            int getMoves(int turn);
+
+            // Check for valid diagonal moves at given coordinate
+            // dir indicates direction (for regular pieces) 
+            // dir = -1 => down
+            // dir = 1 => up
+            // dir = 0 => king (so either direction)
+            // Returns array of valid diagonal moves
+            int checkDiagonal(int x, int y, int dir, std::queue<dataItem> * moves);
+
+            // Check for valid jumps at given coordinate
+            // dir follows same convention as in checkDiagonal()
+            int checkJumps(int x, int y, int dir, std::queue<dataItem> &moves);
+
         
             // Enum for each square on the board
             // Assign 0 as empty
@@ -65,8 +82,8 @@ class CheckersBoard {
             // -2 as red king
             enum PieceType{
                 PIECE_TYPE_EMPTY = 0,
-                PIECE_TYPE_BLACK_PIECE = 1,
-                PIECE_TYPE_BLACK_KING = 2,
+                PIECE_TYPE_BLUE_PIECE = 1,
+                PIECE_TYPE_BLUE_KING = 2,
                 PIECE_TYPE_RED_PIECE = -1,
                 PIECE_TYPE_RED_KING = -2
             };
