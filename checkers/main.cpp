@@ -3,7 +3,7 @@
 int main(){
     CheckersBoard test = CheckersBoard(); 
     test.printBoard();
-    test.printOptions(-1);
+    test.printOptions(1);
     // system("Color E4");
 
     return 0;

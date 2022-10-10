@@ -7,7 +7,7 @@ int CheckersBoard::printOptions(int turn){
     return 0;
 }
 
-int CheckersBoard::checkDiagonal(int i, int j, int turn, queue<dataItem> * moves){
+int CheckersBoard::checkDiagonal(int i, int j, int turn, vector<dataItem> * moves){
     
     // Still need to take care of king backwards... (multiply turn by -1)
     if (i - turn == -1 || i - turn == 8){
@@ -19,14 +19,14 @@ int CheckersBoard::checkDiagonal(int i, int j, int turn, queue<dataItem> * moves
     if (j != 7){
         if (board[i - turn][j + 1] == 0){   // Checking if the diagonal square is empty
             dataItem move = {i, j, i - turn, j + 1};
-            (*moves).push(move);
+            (*moves).push_back(move);
         }
     }
     
     if (j != 0){
         if (board[i - turn][j - 1] == 0){
             dataItem move = {i, j, i - turn, j - 1};
-            (*moves).push(move);
+            (*moves).push_back(move);
         }
     }
 
@@ -39,7 +39,7 @@ int CheckersBoard::checkDiagonal(int i, int j, int turn, queue<dataItem> * moves
 
 int CheckersBoard::getMoves(int turn){
     int skip = 0;
-    queue<dataItem> moves;
+    vector<dataItem> moves;
     for(int i = 0; i < 8; i++){
         for(int j = 0; j < 8; j ++){
             // cout << "j = " << j + 1 << " " << "i = " << 8 - i << "\n";
@@ -48,13 +48,8 @@ int CheckersBoard::getMoves(int turn){
             if(skip % 2 == 0){ //skip blank squares
                 skip++;
                 continue;
-            } else if ((tmp > 0) && (turn <= 0)){
+            } else if (tmp != 0){
                 // check diagonal, jumps, and backwards jumps (if king) going UP
-                checkDiagonal(i, j, turn, &moves);
-            }
-            else if ((tmp < 0) && (turn >= 0)){
-                // check diagonal, jumps, and backwards jumps (if king) going DOWN
-                // cout << j + 1 << " " << 8 - i << "\n";
                 checkDiagonal(i, j, turn, &moves);
             }
             else
@@ -64,11 +59,9 @@ int CheckersBoard::getMoves(int turn){
     }
 
     // print out moves...
-    while(!moves.empty()){
-        dataItem tmp = moves.front();
+    for(auto tmp : moves){
         cout << "Initial position: " << 8 - tmp.x_initial << " " << tmp.y_initial + 1 << " ";
         cout << "Final position: " << 8 - tmp.x << " " << tmp.y + 1 << "\n";
-        moves.pop();
     }
 
     return 0;

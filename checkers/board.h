@@ -67,11 +67,11 @@ class CheckersBoard {
             // dir = 1 => up
             // dir = 0 => king (so either direction)
             // Returns array of valid diagonal moves
-            int checkDiagonal(int x, int y, int dir, std::queue<dataItem> * moves);
+            int checkDiagonal(int x, int y, int dir, std::vector<dataItem> * moves);
 
             // Check for valid jumps at given coordinate
             // dir follows same convention as in checkDiagonal()
-            int checkJumps(int x, int y, int dir, std::queue<dataItem> &moves);
+            int checkJumps(int x, int y, int dir, std::vector<dataItem> &moves);
 
         
             // Enum for each square on the board
