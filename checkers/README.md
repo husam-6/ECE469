@@ -12,14 +12,14 @@ against a computer, another human, or pit the computer against itself.
 To load in a game state, please apply the following conventions. Create a sample
 text file as follows:
 
- 0 0 0 0
-3 0 0 0 
- 4 2 3 0
-0 0 0 0 
- 4 2 4 0
-0 0 0 0 
- 1 4 2 0
-0 0 3 0 
+ 0 0 0 0 <br />
+3 0 0 0  <br />
+ 4 2 3 0 <br />
+0 0 0 0  <br />
+ 4 2 4 0 <br />
+0 0 0 0  <br />
+ 1 4 2 0 <br />
+0 0 3 0  <br />
 1
 10
 
