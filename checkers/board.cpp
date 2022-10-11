@@ -9,6 +9,7 @@ int width = 7;
 
 CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
     // NOTE: BLUE ALWAYS GOING DOWN, RED GOING UP (from initial state)
+    turn = playerTurn;
     
     string line; 
     ifstream stateFile;
@@ -20,7 +21,12 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
     {
 
         if (i == 8){
-            turn = stoi(line);
+            int tmpNum = stoi(line);
+            cout << tmpNum;
+            if (tmpNum == 1)
+                turn = stoi(line);
+            else if (tmpNum == 2)
+                turn = -1;
             continue;
         }
         else if (i == 9){
@@ -49,7 +55,6 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
         i++;
     }
     
-    turn = playerTurn;
     stateFile.close();
 
 };
@@ -62,28 +67,57 @@ int CheckersBoard::printOptions(){
 
 
 int CheckersBoard::checkDiagonal(int i, int j, vector<dataItem> * moves){
-    
-    // Still need to take care of king backwards... (maybe multiply turn by -1 and repeat)
-    if (i + turn == -1 || i + turn == 8){
-        return -1;
-    }
 
     // Turn tells us if the player is going up or down
     // Skip if it isnt your turn!
     if ((turn < 0 && board[i][j] > 0) || (turn > 0 && board[i][j] < 0))
         return -1;
 
-    if (j != 7){
-        if (board[i + turn][j + 1] == 0){   // Checking if the diagonal square is empty
+    // Booleans to indicate if a piece can move forwards / backwards
+    // Default - can go forward, cant go back
+    int forward = 1; 
+    int backwards = 0; 
+
+    // Check if the piece is allowed to move backwards:
+    // Needs to be a King && can't step out of bounds
+    if ((board[i][j] == 2) || (board[i][j] == -2)){
+        if (i - turn != -1 &&  i - turn != 8)
+            backwards = 1;
+    }
+
+    // Check if a piece can move forwards 
+    // Can't step out of bounds
+    if (i + turn == -1 || i + turn == 8){
+        forward = 0;
+    }
+
+    // Check moves to the right
+    if (j != 7 && forward){
+        // Checking if the diagonal square is empty
+        if (board[i + turn][j + 1] == 0){
             dataItem move = {i, j, i + turn, j + 1};
             (*moves).push_back(move);
         }
+
+        if (backwards){
+            if (board[i - turn][j + 1] == 0){
+                dataItem move = {i, j, i - turn, j + 1};
+                (*moves).push_back(move);
+            }
+        }
     }
     
-    if (j != 0){
+    // Check moves to the left
+    if (j != 0 && forward){
         if (board[i + turn][j - 1] == 0){
             dataItem move = {i, j, i + turn, j - 1};
             (*moves).push_back(move);
+        }
+        if (backwards){
+            if (board[i - turn][j - 1] == 0){
+                dataItem move = {i, j, i - turn, j - 1};
+                (*moves).push_back(move);
+            }
         }
     }
 
@@ -119,8 +153,8 @@ int CheckersBoard::getMoves(){
         color = "BLUE";
     cout << "Valid moves for player: " << color << "\n";
     for(auto tmp : moves){
-        cout << "Initial position: " << "(" << tmp.y_initial + 1 <<  ", " << 8 - tmp.x_initial << ") ";
-        cout << "Final position: " << "(" << tmp.y + 1 << ", " << 8 - tmp.x << ")" << "\n";
+        cout << "(" << tmp.y_initial + 1 <<  ", " << 8 - tmp.x_initial << ") ";
+        cout << "-> " << "(" << tmp.y + 1 << ", " << 8 - tmp.x << ")" << "\n";
     }
 
     return 0;
