@@ -9,7 +9,7 @@ int CheckersBoard::printOptions(int turn){
 
 int CheckersBoard::checkDiagonal(int i, int j, int turn, vector<dataItem> * moves){
     
-    // Still need to take care of king backwards... (multiply turn by -1)
+    // Still need to take care of king backwards... (multiply turn by -1 and repeat)
     if (i - turn == -1 || i - turn == 8){
         return -1;
     }
@@ -50,6 +50,8 @@ int CheckersBoard::getMoves(int turn){
                 continue;
             } else if (tmp != 0){
                 // check diagonal, jumps, and backwards jumps (if king) going UP
+                if (tmp == 2 || tmp == -2)
+                    checkDiagonal(i, j, turn * -1, &moves);
                 checkDiagonal(i, j, turn, &moves);
             }
             else
@@ -67,7 +69,7 @@ int CheckersBoard::getMoves(int turn){
     return 0;
 }
 
-string pieceChar = ".";
+string pieceChar = " ";
 string kingChar = "#";
 int width = 7;
 
