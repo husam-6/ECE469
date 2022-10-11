@@ -38,15 +38,16 @@
 class CheckersBoard {
     public:
         // Function to print numbered list of move options
-        int printOptions(int turn);
+        int printOptions();
 
         // Display board state
         void printBoard();
 
         // Constructor creates game defaulting to regular loaded board
         // 8 x 8 with 24 pieces (12 each player)
-        // if a load_file is specified, that game state will be loaded instead
-        CheckersBoard(std::string load_file = "none");
+        // If a load_file is specified, that game state will be loaded instead
+        // Turn variable indicates blue player (-1) and red player (1)
+        CheckersBoard(std::string load_file = "startGame.txt", int playerTurn = 1);
 
         private:
             struct dataItem{
@@ -57,9 +58,8 @@ class CheckersBoard {
             };
         
             // Returns pointer to array of valid coordinate moves for a given point
-            // turn variable indicates blue player (-1) and red player (1)
             // returns array of all valid moves for player
-            int getMoves(int turn);
+            int getMoves();
 
             // Check for valid diagonal moves at given coordinate
             // dir indicates direction (for regular pieces) 
@@ -67,11 +67,11 @@ class CheckersBoard {
             // dir = 1 => up
             // dir = 0 => king (so either direction)
             // Returns array of valid diagonal moves
-            int checkDiagonal(int x, int y, int dir, std::vector<dataItem> * moves);
+            int checkDiagonal(int x, int y, std::vector<dataItem> * moves);
 
             // Check for valid jumps at given coordinate
             // dir follows same convention as in checkDiagonal()
-            int checkJumps(int x, int y, int dir, std::vector<dataItem> &moves);
+            int checkJumps(int x, int y, std::vector<dataItem> &moves);
 
         
             // Enum for each square on the board
@@ -90,6 +90,9 @@ class CheckersBoard {
 
             enum PieceType board[8][8];
 
+            int timeLimit; 
+
+            int turn;
 };
 
 
