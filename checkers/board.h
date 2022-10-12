@@ -50,29 +50,25 @@ class CheckersBoard {
         CheckersBoard(std::string load_file = "startGame.txt", int playerTurn = 1);
 
         private:
-            struct dataItem{
-                int x_initial;
-                int y_initial;
-                int x; 
-                int y;
+            // Item to store coordinates of a move 
+            class dataItem{
+                public:
+                    int x_initial;
+                    int y_initial;
+                    int x; 
+                    int y;
             };
         
             // Returns pointer to array of valid coordinate moves for a given point
             // returns array of all valid moves for player
-            int getMoves();
+            int getMoves(std::vector<dataItem> * moves, std::vector<std::vector<dataItem>> * jumps);
 
             // Check for valid diagonal moves at given coordinate
-            // dir indicates direction (for regular pieces) 
-            // dir = -1 => down
-            // dir = 1 => up
-            // dir = 0 => king (so either direction)
             // Returns array of valid diagonal moves
-            int checkDiagonal(int x, int y, std::vector<dataItem> * moves);
+            int checkDiagonal(int i, int j, std::vector<dataItem> * moves);
 
             // Check for valid jumps at given coordinate
-            // dir follows same convention as in checkDiagonal()
-            int checkJumps(int x, int y, std::vector<dataItem> &moves);
-
+            int checkJumps(int i, int j, std::vector<std::vector<dataItem>> * jumps, int pos = -1);
         
             // Enum for each square on the board
             // Assign 0 as empty

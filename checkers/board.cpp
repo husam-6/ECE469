@@ -17,23 +17,27 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
 
     int i = 0;
     int counter = 0;
+    // Loop through each line of the state file
     while(getline(stateFile, line))
     {
-
+        
+        // Store turn variable
         if (i == 8){
             int tmpNum = stoi(line);
-            cout << tmpNum;
             if (tmpNum == 1)
                 turn = stoi(line);
             else if (tmpNum == 2)
                 turn = -1;
             continue;
         }
+        
+        // Store time limit
         else if (i == 9){
             timeLimit = stoi(line);
             continue;
         }
 
+        // Set the pieces on the board
         for(int j = 0; j < 8; j++){
             char piece = line[j];
             if (counter % 2 == 0){
@@ -60,9 +64,124 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
 };
 
 
+// helper function to print options
+void printCoords(int y, int x){
+    cout << "(" << y + 1 << ", " << 8 - x << ")";
+}
+
+
 int CheckersBoard::printOptions(){
-    getMoves();
+    // Store possible moves in a vector
+    vector<dataItem> moves;
+    vector<vector<dataItem>> jumps;
+    getMoves(&moves, &jumps);
+
+    // Print out numbered options...
+    string color; 
+    if (turn == -1)
+        color = "RED";
+    else
+        color = "BLUE";
+    cout << "Valid moves for player " << color << ":\n";
+    int i = 0;
+
+    if (jumps.size()){
+        for (auto tmp : jumps){
+            cout << "OPTION " << i << " -- ";
+            int idx = 0;
+            for (auto x : tmp){    
+                if (!idx)
+                    printCoords(x.y_initial, x.x_initial);
+                cout << " => ";
+                printCoords(x.y, x.x);
+                idx++;
+            }
+            cout << "\n";
+            i++;
+        }
+    }
+    else{
+        for(auto x : moves){
+            cout << "OPTION " << i << " -- ";
+            printCoords(x.y_initial, x.x_initial);
+            cout << " => ";
+            printCoords(x.y, x.x);
+            cout << "\n";
+            i++;
+        }
+
+
+    }
+
     return 0;
+}
+
+int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jumps, int pos){
+    
+    // Turn tells us if the player is going up or down
+    // Skip if it isnt your turn!
+    if ((turn < 0 && board[i][j] > 0) || (turn > 0 && board[i][j] < 0))
+        return -1;
+
+    int forward = 1;
+    int backwards = 0;
+    
+    // Check if a piece can move forwards 
+    // Can't step out of bounds
+    if (i + 2 * turn == -1 || i + 2 * turn == 8){
+        forward = 0;
+    }
+
+    // Right side jumps
+    if (j <= 5 && forward){
+        // Check for opposing side pieces on diagonal squares
+        if (board[i + turn][j + 1] == (turn * -1)){
+            // Check if square directly after opposing side is empty
+            if (board[i + 2 * turn][j + 2] == 0){
+                dataItem move = {i, j, i + 2 * turn, j + 2};
+                vector<dataItem> tmp;
+                if (pos != -1){
+                    tmp = (*jumps)[pos];
+                    tmp.push_back(move);
+                    (*jumps).push_back(tmp);
+                }
+                else{
+                    tmp.push_back(move);
+                    (*jumps).push_back(tmp);
+                }
+                
+                int position = (*jumps).size() - 1;
+                checkJumps(i + 2 * turn, j + 2, jumps, position);
+            }
+        }
+    }
+    
+    // Left side jumps
+    if (j >= 2 && forward){
+        // Check for opposing side pieces on diagonal squares
+        if (board[i + turn][j - 1] == (turn * -1)){
+            // Check if square directly after opposing side is empty
+            if (board[i + 2 * turn][j - 2] == 0){
+                dataItem move = {i, j, i + 2 * turn, j - 2};
+                vector<dataItem> tmp;
+                if (pos != -1){
+                    tmp = (*jumps)[pos];
+                    tmp.push_back(move);
+                    (*jumps).push_back(tmp);
+                }
+                else{
+                    tmp.push_back(move);
+                    (*jumps).push_back(tmp);
+                }
+
+                int position = (*jumps).size() - 1;
+                checkJumps(i + 2 * turn, j - 2, jumps, position);
+            }
+        }
+    }
+
+    return 0;
+
 }
 
 
@@ -125,9 +244,8 @@ int CheckersBoard::checkDiagonal(int i, int j, vector<dataItem> * moves){
 }
 
 
-int CheckersBoard::getMoves(){
+int CheckersBoard::getMoves(vector<dataItem> * moves, vector<vector<dataItem>> * jumps){
     int skip = 0;
-    vector<dataItem> moves;
     for(int i = 0; i < 8; i++){
         for(int j = 0; j < 8; j ++){
             PieceType tmp = board[i][j];
@@ -137,24 +255,14 @@ int CheckersBoard::getMoves(){
                 skip++;
                 continue;
             } else if (tmp != 0){
-                // check diagonal, jumps, and backwards jumps (if king)
-                checkDiagonal(i, j, &moves);
+                // check jumps, if none then diagonal moves
+                checkJumps(i, j, jumps);
+                if ((*jumps).size() == 0)
+                    checkDiagonal(i, j, moves);
             }
             skip++;
         }
         skip++;
-    }
-
-    // print out moves...
-    string color; 
-    if (turn == -1)
-        color = "RED";
-    else
-        color = "BLUE";
-    cout << "Valid moves for player: " << color << "\n";
-    for(auto tmp : moves){
-        cout << "(" << tmp.y_initial + 1 <<  ", " << 8 - tmp.x_initial << ") ";
-        cout << "-> " << "(" << tmp.y + 1 << ", " << 8 - tmp.x << ")" << "\n";
     }
 
     return 0;
@@ -192,7 +300,7 @@ void fillEmpty(int counter){
     }
 }
 
-
+// Print the board state
 void CheckersBoard::printBoard(){
     int counter = 0;
     string padding = "  ";
