@@ -11,7 +11,7 @@ int main(){
     string player;
     string gameState;
     
-    cout << "Would you like to load in a game state? \n(Y/N): ";
+    cout << "Would you like to load in a game state? (Y/N): ";
     cin >> gameState; 
     if(gameState == "Y")
     {

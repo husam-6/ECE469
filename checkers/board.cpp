@@ -179,7 +179,10 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 checkJumps(i + 2 * turn, j - 2, jumps, position);
             }
         }
+    } else if (pos != -1 && (*jumps).size() - 1 > pos){
+        (*jumps).erase((*jumps).begin() + pos);
     }
+
 
     return 0;
 
