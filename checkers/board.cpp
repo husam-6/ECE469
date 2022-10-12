@@ -167,6 +167,7 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 if (pos != -1){
                     tmp = (*jumps)[pos];
                     tmp.push_back(move);
+                    (*jumps).erase((*jumps).begin() + pos);
                     (*jumps).push_back(tmp);
                 }
                 else{
