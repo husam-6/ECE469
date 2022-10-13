@@ -189,7 +189,6 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
         if (boardCopy[i + turn][j - 1] == (turn * -1) || boardCopy[i + turn][j - 1] == (turn * -2)){
             // Check if square directly after opposing side is empty
             if (boardCopy[i + 2 * turn][j - 2] == 0){
-                cout << "GOT HERE";
                 dataItem move = {i, j, i + 2 * turn, j - 2};
                 vector<dataItem> tmp;
                 if (pos != -1){
