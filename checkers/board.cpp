@@ -118,17 +118,6 @@ int CheckersBoard::printOptions(){
     return 0;
 }
 
-void printArray(int boardCopy[8][8]){
-    cout<<"Printing board state:\n";
-	for(int i = 0; i < 8; i++){
-		for(int j = 0; j < 8;j++){
-			cout << "\t" << boardCopy[i][j];
-		}
-		cout << "\n";
-	}
-
-}
-
 
 int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jumps, int boardCopy[8][8], int pos){
     
@@ -141,19 +130,11 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
     int forward = 1;
     int backwards = 0;
     
-    cout << "CHECKING: ";
-    printCoords(j, i);
-    cout << "\n";
-    printArray(boardCopy);
-    // cout << "Y Value: " << i + 2 * turn << "\n"; 
-
     // Check if a piece can move forwards 
     // Can't step out of bounds
     if ((i + 2 * turn <= -1) || (i + 2 * turn >= 8)){
         forward = 0;
     }
-
-    // cout << "Forward value: " << forward << "\n";
 
     // Check if the piece is allowed to move backwards:
     // Needs to be a King && can't step out of bounds
@@ -168,12 +149,9 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
     // Right side jumps
     if (j <= 5 && forward){
         // Check for opposing side pieces on diagonal squares
-        if (boardCopy[i + turn][j + 1] == (turn * -1)){
+        if (boardCopy[i + turn][j + 1] == (turn * -1) || boardCopy[i + turn][j + 1] == (turn * -2)){
             // Check if square directly after opposing side is empty
             if (boardCopy[i + 2 * turn][j + 2] == 0){
-                cout << "FOUND RIGHT FORWARD MOVE" << "\n";
-                printCoords(j + 2, i + 2 * turn);
-                cout << "\n";
                 dataItem move = {i, j, i + 2 * turn, j + 2};
                 vector<dataItem> tmp;
                 if (pos != -1){
@@ -196,9 +174,6 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 boardCopy[i][j] = 0;
                 int position = (*jumps).size() - 1;
                 checkJumps(i + 2 * turn, j + 2, jumps, boardCopy, position);
-                cout << "RETURNING BACK TO CHECKING: ";
-                printCoords(j, i);
-                cout << "\n";
 
                 // Put piece back for other checks
                 boardCopy[i + turn][j + 1] = tmpPiece;
@@ -211,12 +186,10 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
     // Left side jumps
     if (j >= 2 && forward){
         // Check for opposing side pieces on diagonal squares
-        if (boardCopy[i + turn][j - 1] == (turn * -1)){
+        if (boardCopy[i + turn][j - 1] == (turn * -1) || boardCopy[i + turn][j - 1] == (turn * -2)){
             // Check if square directly after opposing side is empty
             if (boardCopy[i + 2 * turn][j - 2] == 0){
-                cout << "FOUND LEFT FORWARD MOVE" << "\n";
-                printCoords(j - 2, i + 2 * turn);
-                cout << "\n";
+                cout << "GOT HERE";
                 dataItem move = {i, j, i + 2 * turn, j - 2};
                 vector<dataItem> tmp;
                 if (pos != -1){
@@ -239,9 +212,6 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
 
                 int position = (*jumps).size() - 1;
                 checkJumps(i + 2 * turn, j - 2, jumps, boardCopy, position);
-                cout << "RETURNING BACK TO CHECKING: ";
-                printCoords(j, i);
-                cout << "\n";
 
                 // Put pieces back
                 boardCopy[i + turn][j - 1] = tmpPiece;
@@ -253,12 +223,9 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
 
     // Right jumps (backwards)
     if (j <= 5 && backwards){
-        if (boardCopy[i - turn][j + 1] == (turn * -1)){
+        if (boardCopy[i - turn][j + 1] == (turn * -1) || boardCopy[i - turn][j + 1] == (turn * -2)){
             // Check if square directly after opposing side is empty
             if (boardCopy[i - 2 * turn][j + 2] == 0){
-                cout << "FOUND RIGHT BACKWARDS MOVE" << "\n";
-                printCoords(j + 2, i - 2 * turn);
-                cout << "\n";
                 dataItem move = {i, j, i - 2 * turn, j + 2};
                 vector<dataItem> tmp;
                 if (pos != -1){
@@ -280,9 +247,6 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 boardCopy[i][j] = 0;
                 int position = (*jumps).size() - 1;
                 checkJumps(i - 2 * turn, j + 2, jumps, boardCopy, position);
-                cout << "RETURNING BACK TO CHECKING: ";
-                printCoords(j, i);
-                cout << "\n";
 
                 // Put piece back
                 boardCopy[i - turn][j + 1] = tmpPiece;
@@ -294,12 +258,9 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
     
     // Left jumps (backwards)
     if (j >=2 && backwards){
-        if (boardCopy[i - turn][j - 1] == (turn * -1)){
+        if (boardCopy[i - turn][j - 1] == (turn * -1) || boardCopy[i - turn][j - 1] == (turn * -2)){
             // Check if square directly after opposing side is empty
             if (boardCopy[i - 2 * turn][j - 2] == 0){
-                cout << "FOUND LEFT BACKWARDS MOVE" << "\n";
-                printCoords(j - 2, i - 2 * turn);
-                cout << "\n";
                 dataItem move = {i, j, i - 2 * turn, j - 2};
                 vector<dataItem> tmp;
                 if (pos != -1){
@@ -321,9 +282,6 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 boardCopy[i][j] = 0;
                 int position = (*jumps).size() - 1;
                 checkJumps(i - 2 * turn, j - 2, jumps, boardCopy, position);
-                cout << "RETURNING BACK TO CHECKING: ";
-                printCoords(j, i);
-                cout << "\n";
 
                 // Put piece back
                 boardCopy[i - turn][j - 1] = tmpPiece;
@@ -333,18 +291,9 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
         }
 
     } 
-    // else if (pos != -1 && (*jumps).size() - 1 > pos){
-    //     countDuplicates++;
-    // }
-    
+
     if (pos != -1 && countDuplicates > 0)
         (*jumps).erase((*jumps).begin() + pos);
-    // // Remove duplicate entries
-    // while ( pos != -1 && countDuplicates > 0){
-    //     countDuplicates--;
-    //     (*jumps).erase((*jumps).begin() + pos);
-    //     pos--;
-    // }
 
 
     return 0;
