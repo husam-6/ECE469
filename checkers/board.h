@@ -83,6 +83,11 @@ class CheckersBoard {
             // Indicates whose turn it is -> 1 for Blue and -1 for Red
             int turn;
 
+            // Counters to keep track of the number of pieces
+            int numRed;
+            int numBlue;
+            int numRedKings;
+            int numBlueKings;
 
             // vectors to store possible jumps / diagonal moves
             std::vector<std::vector<dataItem>> jumps;
@@ -92,4 +97,4 @@ class CheckersBoard {
 
 
 
-#endif //_HASH_H
+#endif _BOARD_H

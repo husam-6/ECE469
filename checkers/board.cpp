@@ -47,12 +47,20 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
             }
             if (piece == '3'){
                 board[i][j] = -1;
+                numRed++;
             }
             else if(piece == '4'){
                 board[i][j] = -2;
+                numRedKings++;
             }
-            else{    
-                board[i][j] = int(piece - '0');
+            else{
+                int tmp = int(piece - '0');
+                if (tmp == 1)
+                    numBlue++;
+                else if (tmp == 2)
+                    numBlueKings++;
+
+                board[i][j] = tmp;
             }
             counter++;
         }
@@ -114,6 +122,11 @@ int CheckersBoard::printOptions(){
     }
 
     return 0;
+}
+
+// Helper function for movePiece function
+int midPoint(int x1, int x2){
+    return (x1 + x2) / 2;
 }
 
 
