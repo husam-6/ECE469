@@ -72,10 +72,8 @@ void printCoords(int y, int x){
 
 
 int CheckersBoard::printOptions(){
-    // Store possible moves in a vector
-    vector<dataItem> moves;
-    vector<vector<dataItem>> jumps;
-    getMoves(&moves, &jumps);
+    // Store possible moves in a vector (jumps and moves member functions)
+    getMoves();
 
     // Print out numbered options...
     string color; 
@@ -119,7 +117,7 @@ int CheckersBoard::printOptions(){
 }
 
 
-int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jumps, int boardCopy[8][8], int pos){
+int CheckersBoard::checkJumps(int i, int j, int boardCopy[8][8], int pos){
     
     // Turn tells us if the player is going up or down
     // Skip if it isnt your turn!
@@ -156,14 +154,14 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 vector<dataItem> tmp;
                 if (pos != -1){
                     // Make a copy of the last vector of moves to expand on
-                    tmp = (*jumps)[pos];
+                    tmp = jumps[pos];
                     tmp.push_back(move);
-                    (*jumps).push_back(tmp);
+                    jumps.push_back(tmp);
                     countDuplicates++;
                 }
                 else{
                     tmp.push_back(move);
-                    (*jumps).push_back(tmp);
+                    jumps.push_back(tmp);
                 }
 
                 // Remove captured piece from board copy, pass into recursive call
@@ -172,8 +170,8 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 boardCopy[i + 2 * turn][j + 2] = boardCopy[i][j];
                 boardCopy[i + turn][j + 1] = 0;
                 boardCopy[i][j] = 0;
-                int position = (*jumps).size() - 1;
-                checkJumps(i + 2 * turn, j + 2, jumps, boardCopy, position);
+                int position = jumps.size() - 1;
+                checkJumps(i + 2 * turn, j + 2,boardCopy, position);
 
                 // Put piece back for other checks
                 boardCopy[i + turn][j + 1] = tmpPiece;
@@ -192,14 +190,14 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 dataItem move = {i, j, i + 2 * turn, j - 2};
                 vector<dataItem> tmp;
                 if (pos != -1){
-                    tmp = (*jumps)[pos];
+                    tmp = jumps[pos];
                     tmp.push_back(move);
-                    (*jumps).push_back(tmp);
+                    jumps.push_back(tmp);
                     countDuplicates++;
                 }
                 else{
                     tmp.push_back(move);
-                    (*jumps).push_back(tmp);
+                    jumps.push_back(tmp);
                 }
 
                 // Remove captured piece from board copy
@@ -209,8 +207,8 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 boardCopy[i + turn][j - 1] = 0;
                 boardCopy[i][j] = 0;
 
-                int position = (*jumps).size() - 1;
-                checkJumps(i + 2 * turn, j - 2, jumps, boardCopy, position);
+                int position = jumps.size() - 1;
+                checkJumps(i + 2 * turn, j - 2, boardCopy, position);
 
                 // Put pieces back
                 boardCopy[i + turn][j - 1] = tmpPiece;
@@ -228,14 +226,14 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 dataItem move = {i, j, i - 2 * turn, j + 2};
                 vector<dataItem> tmp;
                 if (pos != -1){
-                    tmp = (*jumps)[pos];
+                    tmp = jumps[pos];
                     tmp.push_back(move);
-                    (*jumps).push_back(tmp);
+                    jumps.push_back(tmp);
                     countDuplicates++;
                 }
                 else{
                     tmp.push_back(move);
-                    (*jumps).push_back(tmp);
+                    jumps.push_back(tmp);
                 }
                 
                 // Remove captured piece from board copy
@@ -244,8 +242,8 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 boardCopy[i - 2 * turn][j + 2] = board[i][j];
                 boardCopy[i - turn][j + 1] = 0;
                 boardCopy[i][j] = 0;
-                int position = (*jumps).size() - 1;
-                checkJumps(i - 2 * turn, j + 2, jumps, boardCopy, position);
+                int position = jumps.size() - 1;
+                checkJumps(i - 2 * turn, j + 2, boardCopy, position);
 
                 // Put piece back
                 boardCopy[i - turn][j + 1] = tmpPiece;
@@ -263,14 +261,14 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 dataItem move = {i, j, i - 2 * turn, j - 2};
                 vector<dataItem> tmp;
                 if (pos != -1){
-                    tmp = (*jumps)[pos];
+                    tmp = jumps[pos];
                     tmp.push_back(move);
-                    (*jumps).push_back(tmp);
+                    jumps.push_back(tmp);
                     countDuplicates++;
                 }
                 else{
                     tmp.push_back(move);
-                    (*jumps).push_back(tmp);
+                    jumps.push_back(tmp);
                 }
 
                 // Remove captured piece from board copy
@@ -279,8 +277,8 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
                 boardCopy[i - 2 * turn][j - 2] = board[i][j];
                 boardCopy[i - turn][j - 1] = 0;
                 boardCopy[i][j] = 0;
-                int position = (*jumps).size() - 1;
-                checkJumps(i - 2 * turn, j - 2, jumps, boardCopy, position);
+                int position = jumps.size() - 1;
+                checkJumps(i - 2 * turn, j - 2, boardCopy, position);
 
                 // Put piece back
                 boardCopy[i - turn][j - 1] = tmpPiece;
@@ -292,7 +290,7 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
     } 
 
     if (pos != -1 && countDuplicates > 0)
-        (*jumps).erase((*jumps).begin() + pos);
+        jumps.erase(jumps.begin() + pos);
 
 
     return 0;
@@ -300,7 +298,7 @@ int CheckersBoard::checkJumps(int i, int j, std::vector<vector<dataItem>> * jump
 }
 
 
-int CheckersBoard::checkDiagonal(int i, int j, vector<dataItem> * moves){
+int CheckersBoard::checkDiagonal(int i, int j){
 
     // Turn tells us if the player is going up or down
     // Skip if it isnt your turn!
@@ -330,14 +328,14 @@ int CheckersBoard::checkDiagonal(int i, int j, vector<dataItem> * moves){
         // Checking if the diagonal square is empty
         if (board[i + turn][j + 1] == 0){
             dataItem move = {i, j, i + turn, j + 1};
-            (*moves).push_back(move);
+            moves.push_back(move);
         }
 
     }
     if (j != 7 && backwards){
         if (board[i - turn][j + 1] == 0){
             dataItem move = {i, j, i - turn, j + 1};
-            (*moves).push_back(move);
+            moves.push_back(move);
         }
     }
     
@@ -345,13 +343,13 @@ int CheckersBoard::checkDiagonal(int i, int j, vector<dataItem> * moves){
     if (j != 0 && forward){
         if (board[i + turn][j - 1] == 0){
             dataItem move = {i, j, i + turn, j - 1};
-            (*moves).push_back(move);
+            moves.push_back(move);
         }
     }
     if (j != 0 && backwards){
         if (board[i - turn][j - 1] == 0){
             dataItem move = {i, j, i - turn, j - 1};
-            (*moves).push_back(move);
+            moves.push_back(move);
         }
     }
 
@@ -359,7 +357,7 @@ int CheckersBoard::checkDiagonal(int i, int j, vector<dataItem> * moves){
 }
 
 
-int CheckersBoard::getMoves(vector<dataItem> * moves, vector<vector<dataItem>> * jumps){
+int CheckersBoard::getMoves(){
     int skip = 0;
     for(int i = 0; i < 8; i++){
         for(int j = 0; j < 8; j ++){
@@ -371,9 +369,9 @@ int CheckersBoard::getMoves(vector<dataItem> * moves, vector<vector<dataItem>> *
                 continue;
             } else if (tmp != 0){
                 // check jumps, if none then diagonal moves
-                checkJumps(i, j, jumps, board, -1);
-                if ((*jumps).size() == 0)
-                    checkDiagonal(i, j, moves);
+                checkJumps(i, j, board, -1);
+                if (jumps.size() == 0)
+                    checkDiagonal(i, j);
             }
             skip++;
         }

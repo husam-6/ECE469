@@ -61,14 +61,14 @@ class CheckersBoard {
         
             // Returns pointer to array of valid coordinate moves for a given point
             // returns array of all valid moves for player
-            int getMoves(std::vector<dataItem> * moves, std::vector<std::vector<dataItem>> * jumps);
+            int getMoves();
 
             // Check for valid diagonal moves at given coordinate
             // Returns array of valid diagonal moves
-            int checkDiagonal(int i, int j, std::vector<dataItem> * moves);
+            int checkDiagonal(int i, int j);
 
             // Check for valid jumps at given coordinate
-            int checkJumps(int i, int j, std::vector<std::vector<dataItem>> * jumps, int boardCopy[8][8], int pos = -1);
+            int checkJumps(int i, int j, int boardCopy[8][8], int pos = -1);
         
             // Int array bitmap for each square on the board
             // Assign 0 as empty
@@ -80,7 +80,14 @@ class CheckersBoard {
 
             int timeLimit; 
 
+            // Indicates whose turn it is -> 1 for Blue and -1 for Red
             int turn;
+
+
+            // vectors to store possible jumps / diagonal moves
+            std::vector<std::vector<dataItem>> jumps;
+            std::vector<dataItem> moves;
+
 };
 
 
