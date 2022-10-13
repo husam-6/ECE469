@@ -68,23 +68,15 @@ class CheckersBoard {
             int checkDiagonal(int i, int j, std::vector<dataItem> * moves);
 
             // Check for valid jumps at given coordinate
-            int checkJumps(int i, int j, std::vector<std::vector<dataItem>> * jumps, int pos = -1);
+            int checkJumps(int i, int j, std::vector<std::vector<dataItem>> * jumps, int boardCopy[8][8], int pos = -1);
         
-            // Enum for each square on the board
+            // Int array bitmap for each square on the board
             // Assign 0 as empty
             // 1 as black piece
             // 2 as black king
             // -1 as red piece
             // -2 as red king
-            enum PieceType{
-                PIECE_TYPE_EMPTY = 0,
-                PIECE_TYPE_BLUE_PIECE = 1,
-                PIECE_TYPE_BLUE_KING = 2,
-                PIECE_TYPE_RED_PIECE = -1,
-                PIECE_TYPE_RED_KING = -2
-            };
-
-            enum PieceType board[8][8];
+            int board[8][8];
 
             int timeLimit; 
 
