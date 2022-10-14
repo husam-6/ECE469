@@ -79,6 +79,9 @@ void printCoords(int y, int x){
 }
 
 
+// Returns -1 when no moves are present
+// Returns 1 when a jump was made
+// Returns 0 when a diagonal move was made
 int CheckersBoard::printOptions(){
     // Store possible moves in a vector (jumps and moves member functions)
     getMoves();
@@ -107,6 +110,8 @@ int CheckersBoard::printOptions(){
             cout << "\n";
             i++;
         }
+        return 1;
+
     }
     else{
         for(auto x : moves){
@@ -117,16 +122,69 @@ int CheckersBoard::printOptions(){
             cout << "\n";
             i++;
         }
-
-
+        return 0;
     }
 
-    return 0;
+    return -1;
 }
 
 // Helper function for movePiece function
 int midPoint(int x1, int x2){
     return (x1 + x2) / 2;
+}
+
+
+int CheckersBoard::movePiece(int option, int jump){
+    
+    // Diagonal moves
+    if (!jump){
+        dataItem move = moves[option];
+        board[move.x][move.y] = board[move.x_initial][move.y_initial];
+        board[move.x_initial][move.y_initial] = 0;
+        moves.clear();
+        return 0;
+    }
+
+    // Jump moves - loop through each jump (if there are multiple)
+    int i = 0;
+    int tmpPiece = 0;
+    for (auto move : jumps[option]){
+        if(i == 0){
+            tmpPiece = board[move.x_initial][move.y_initial];
+            board[move.x_initial][move.y_initial] = 0;
+        }
+        
+        int skip_i, skip_j;
+        skip_i = midPoint(move.x_initial, move.x);
+        skip_j = midPoint(move.y_initial, move.y);
+        
+        // Update piece counters
+        switch (board[skip_i][skip_j]){
+            case 1:
+                numBlue--;
+                break;
+            case 2:
+                numBlueKings--;
+                break;
+            case -1:
+                numRed--;
+                break;
+            case -2:
+                numRedKings--;
+                break;
+        }
+
+        board[skip_i][skip_j] = 0; 
+        i++;
+    }
+    
+    dataItem move = jumps[option].back();
+    board[move.x][move.y] = tmpPiece;
+
+    // Remove elements from array 
+    jumps.clear();
+    moves.clear();
+    return 0;
 }
 
 

@@ -43,6 +43,9 @@ class CheckersBoard {
         // Display board state
         void printBoard();
 
+        // Moves a piece
+        int movePiece(int option, int jump = 0);
+
         // Constructor creates game defaulting to regular loaded board
         // 8 x 8 with 24 pieces (12 each player)
         // If a load_file is specified, that game state will be loaded instead
@@ -97,4 +100,4 @@ class CheckersBoard {
 
 
 
-#endif _BOARD_H
+#endif //_BOARD_H

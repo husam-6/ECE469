@@ -30,6 +30,13 @@ int main(){
     }
     CheckersBoard test = CheckersBoard(fileName, color); 
     test.printBoard();
-    test.printOptions();
+    int type = test.printOptions();
+    
+    int option;
+    cout << "Pick a move: ";
+    cin >> option;
+    test.movePiece(option, type);
+    test.printBoard();
+
     return 0;
 }
