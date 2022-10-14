@@ -13,7 +13,9 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
     
     string line; 
     ifstream stateFile;
-    stateFile.open(loadFile); 
+    stateFile.open(loadFile);
+
+    timeLimit = 5;
 
     int i = 0;
     int counter = 0;
@@ -184,6 +186,10 @@ int CheckersBoard::movePiece(int option, int jump){
     // Remove elements from array 
     jumps.clear();
     moves.clear();
+
+    // Change turn to the other player
+    turn = turn * -1; 
+    
     return 0;
 }
 
