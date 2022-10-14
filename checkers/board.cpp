@@ -87,6 +87,17 @@ string CheckersBoard::checkWinner(){
     return "BLUE";
 }
 
+int CheckersBoard::getTurn(){
+    return turn; 
+}
+
+int CheckersBoard::getNumberOfOptions(){
+    if (jumps.size() > 0){
+        return jumps.size();
+    }
+    return moves.size();
+}
+
 
 // helper function to print options
 void printCoords(int y, int x){
@@ -166,7 +177,6 @@ int midPoint(int x1, int x2){
 
 
 int CheckersBoard::movePiece(int option, int jump){
-
     // Check if option given is out of bounds..
     if (jump){
         if (option >= jumps.size() || option < 0)

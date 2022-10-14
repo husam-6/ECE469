@@ -24,8 +24,11 @@ class Game {
             // Upon initialization, which player starts
             int playerStart;
 
+            // CheckersBoard object to store & make moves
             CheckersBoard board;
 
+            // Function for computer to play as either RED (-1) or BLUE (1)
+            int computerMove(int * type);
 };
 
 

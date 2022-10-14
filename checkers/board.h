@@ -52,6 +52,12 @@ class CheckersBoard {
         // Get winner (when games over, basically a getter for turn)
         std::string checkWinner();
 
+        // Getter for turn
+        int getTurn();
+
+        // Getter for the number of options
+        int getNumberOfOptions();
+
         // Constructor creates game defaulting to regular loaded board
         // 8 x 8 with 24 pieces (12 each player)
         // If a load_file is specified, that game state will be loaded instead
