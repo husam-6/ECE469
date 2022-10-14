@@ -74,6 +74,19 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
 
 };
 
+int CheckersBoard::testEnd(){
+    int total;
+    total = jumps.size() + moves.size();
+    return total; 
+}
+
+string CheckersBoard::checkWinner(){
+    if ((turn * -1 ) == -1){
+        return "RED";
+    } 
+    return "BLUE";
+}
+
 
 // helper function to print options
 void printCoords(int y, int x){
@@ -130,6 +143,22 @@ int CheckersBoard::printOptions(){
     return -1;
 }
 
+void CheckersBoard::makeKing(int i, int j){
+    if (board[i][j] == -2 || board[i][j] == 2)
+        return;
+    if (turn == -1){
+        if (i == 0){
+            board[i][j] *= 2; 
+        }
+    }
+    else if (turn == 1){
+        if (i == 7){
+            board[i][j] *= 2;
+        }
+    }
+}
+
+
 // Helper function for movePiece function
 int midPoint(int x1, int x2){
     return (x1 + x2) / 2;
@@ -137,6 +166,16 @@ int midPoint(int x1, int x2){
 
 
 int CheckersBoard::movePiece(int option, int jump){
+
+    // Check if option given is out of bounds..
+    if (jump){
+        if (option >= jumps.size() || option < 0)
+            return -1;
+    }
+    else{
+        if (option >= moves.size() || option < 0)
+            return -1;
+    }
     
     // Diagonal moves
     if (!jump){
@@ -144,6 +183,11 @@ int CheckersBoard::movePiece(int option, int jump){
         board[move.x][move.y] = board[move.x_initial][move.y_initial];
         board[move.x_initial][move.y_initial] = 0;
         moves.clear();
+
+        // Check if we can turn the piece into a king
+        makeKing(move.x, move.y);
+
+        turn = turn * -1; 
         return 0;
     }
 
@@ -187,9 +231,13 @@ int CheckersBoard::movePiece(int option, int jump){
     jumps.clear();
     moves.clear();
 
+    // Check if we can turn the piece into a king
+    makeKing(move.x, move.y);
+
     // Change turn to the other player
-    turn = turn * -1; 
-    
+    turn = turn * -1;
+
+
     return 0;
 }
 

@@ -46,10 +46,16 @@ class CheckersBoard {
         // Moves a piece
         int movePiece(int option, int jump = 0);
 
+        // Check if no moves / no pieces are left
+        int testEnd();
+
+        // Get winner (when games over, basically a getter for turn)
+        std::string checkWinner();
+
         // Constructor creates game defaulting to regular loaded board
         // 8 x 8 with 24 pieces (12 each player)
         // If a load_file is specified, that game state will be loaded instead
-        // Turn variable indicates blue player (-1) and red player (1)
+        // Turn variable indicates blue player (1) and red player (-1)
         CheckersBoard(std::string load_file = "startGame.txt", int playerTurn = 1);
 
         private:
@@ -72,11 +78,14 @@ class CheckersBoard {
 
             // Check for valid jumps at given coordinate
             int checkJumps(int i, int j, int boardCopy[8][8], int pos = -1);
+
+            // Turn piece into a king
+            void makeKing(int i, int j);
         
             // Int array bitmap for each square on the board
             // Assign 0 as empty
-            // 1 as black piece
-            // 2 as black king
+            // 1 as blue piece
+            // 2 as blue king
             // -1 as red piece
             // -2 as red king
             int board[8][8];
