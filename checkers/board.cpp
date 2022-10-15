@@ -74,12 +74,14 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
 
 };
 
+// Function to test if the game has ended
 int CheckersBoard::testEnd(){
     int total;
     total = jumps.size() + moves.size();
     return total; 
 }
 
+// Function to check who won at the end of the game
 string CheckersBoard::checkWinner(){
     if ((turn * -1 ) == -1){
         return "RED";
@@ -87,15 +89,22 @@ string CheckersBoard::checkWinner(){
     return "BLUE";
 }
 
+// Getter for player turn boolean
 int CheckersBoard::getTurn(){
     return turn; 
 }
 
+// Getter for number of possible options
 int CheckersBoard::getNumberOfOptions(){
     if (jumps.size() > 0){
         return jumps.size();
     }
     return moves.size();
+}
+
+// Getter time limit
+int CheckersBoard::getTimeLimit(){
+    return timeLimit;
 }
 
 

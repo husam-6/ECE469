@@ -29,6 +29,9 @@ class Game {
 
             // Function for computer to play as either RED (-1) or BLUE (1)
             int computerMove(int * type);
+            
+            // Function for computer to play as either RED (-1) or BLUE (1)
+            int miniMax();
 };
 
 

@@ -58,6 +58,9 @@ class CheckersBoard {
         // Getter for the number of options
         int getNumberOfOptions();
 
+        // Getter for time limit
+        int getTimeLimit();
+
         // Constructor creates game defaulting to regular loaded board
         // 8 x 8 with 24 pieces (12 each player)
         // If a load_file is specified, that game state will be loaded instead

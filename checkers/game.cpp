@@ -26,6 +26,7 @@ Game::Game(){
     }
 
     // Convert color to match convention in CheckersBoard class
+    // Initialize as blue start unless specified
     int color = 1;
     if (player == "2"){
         color = -1;
