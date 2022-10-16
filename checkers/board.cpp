@@ -49,20 +49,12 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
             }
             if (piece == '3'){
                 board[i][j] = -1;
-                numRed++;
             }
             else if(piece == '4'){
                 board[i][j] = -2;
-                numRedKings++;
             }
             else{
-                int tmp = int(piece - '0');
-                if (tmp == 1)
-                    numBlue++;
-                else if (tmp == 2)
-                    numBlueKings++;
-
-                board[i][j] = tmp;
+                board[i][j] = int(piece - '0');
             }
             counter++;
         }
@@ -102,11 +94,6 @@ int CheckersBoard::getNumberOfOptions(){
     return moves.size();
 }
 
-// Getter time limit
-int CheckersBoard::getTimeLimit(){
-    return timeLimit;
-}
-
 
 // helper function to print options
 void printCoords(int y, int x){
@@ -119,7 +106,7 @@ void printCoords(int y, int x){
 // Returns 0 when a diagonal move was made
 int CheckersBoard::printOptions(){
     // Store possible moves in a vector (jumps and moves member functions)
-    getMoves();
+    int returnValue = getMoves(board, jumps, moves);
 
     // Print out numbered options...
     string color; 
@@ -145,6 +132,11 @@ int CheckersBoard::printOptions(){
             cout << "\n";
             i++;
         }
+        // Padding to keep screen size constant
+        while (i <= 12){
+            cout << "\n";
+            i++;
+        }
         return 1;
 
     }
@@ -154,6 +146,10 @@ int CheckersBoard::printOptions(){
             printCoords(x.y_initial, x.x_initial);
             cout << " => ";
             printCoords(x.y, x.x);
+            cout << "\n";
+            i++;
+        }
+        while (i <= 12){
             cout << "\n";
             i++;
         }
@@ -178,14 +174,48 @@ void CheckersBoard::makeKing(int i, int j){
     }
 }
 
+// Heuristic evaluation of the board state
+int CheckersBoard::eval(int (&state)[8][8], int turn){
+
+    // RED is always positive (MAX), BLUE is always negative (MIN)
+    int w1 = 3;
+    int w2 = 5;
+
+    int numPawns, numKings; 
+    numPawns = numKings = 0; 
+
+    // Simple heuristic for now - number of 5 * kings + 3 * pawns
+    int counter = 0;
+    for (int i = 0; i < 8; i++){
+        for (int j = 0; j < 8; j++){
+            if (counter % 2 == 0){
+                counter++;
+                continue;
+            }
+            if (state[i][j] == turn)
+                numPawns++; 
+            else if (state[i][j] == 2 * turn)
+                numKings++;
+            counter++;
+        }
+        counter++;
+    }
+
+    return turn * (w1 * numPawns + w2 * numKings);
+}
 
 // Helper function for movePiece function
 int midPoint(int x1, int x2){
     return (x1 + x2) / 2;
 }
 
-
 int CheckersBoard::movePiece(int option, int jump){
+    movePiece(option, jump, board);
+    return 0;
+}
+
+
+int CheckersBoard::movePiece(int option, int jump, int (&state)[8][8]){
     // Check if option given is out of bounds..
     if (jump){
         if (option >= jumps.size() || option < 0)
@@ -199,8 +229,8 @@ int CheckersBoard::movePiece(int option, int jump){
     // Diagonal moves
     if (!jump){
         dataItem move = moves[option];
-        board[move.x][move.y] = board[move.x_initial][move.y_initial];
-        board[move.x_initial][move.y_initial] = 0;
+        state[move.x][move.y] = state[move.x_initial][move.y_initial];
+        state[move.x_initial][move.y_initial] = 0;
         moves.clear();
 
         // Check if we can turn the piece into a king
@@ -215,36 +245,20 @@ int CheckersBoard::movePiece(int option, int jump){
     int tmpPiece = 0;
     for (auto move : jumps[option]){
         if(i == 0){
-            tmpPiece = board[move.x_initial][move.y_initial];
-            board[move.x_initial][move.y_initial] = 0;
+            tmpPiece = state[move.x_initial][move.y_initial];
+            state[move.x_initial][move.y_initial] = 0;
         }
         
         int skip_i, skip_j;
         skip_i = midPoint(move.x_initial, move.x);
         skip_j = midPoint(move.y_initial, move.y);
-        
-        // Update piece counters
-        switch (board[skip_i][skip_j]){
-            case 1:
-                numBlue--;
-                break;
-            case 2:
-                numBlueKings--;
-                break;
-            case -1:
-                numRed--;
-                break;
-            case -2:
-                numRedKings--;
-                break;
-        }
 
-        board[skip_i][skip_j] = 0; 
+        state[skip_i][skip_j] = 0; 
         i++;
     }
     
     dataItem move = jumps[option].back();
-    board[move.x][move.y] = tmpPiece;
+    state[move.x][move.y] = tmpPiece;
 
     // Remove elements from array 
     jumps.clear();
@@ -260,12 +274,52 @@ int CheckersBoard::movePiece(int option, int jump){
     return 0;
 }
 
+// Helper function for checkjumps
+// NOTE: Might be inefficient right now - copies board a second time
+int CheckersBoard::makeJump(int (&boardCopy)[8][8],
+                            int i, int j, int final_i, int final_j,
+                            int &countDuplicates, int pos, vector<vector<dataItem>> &jumps){
+    dataItem move = {i, j, final_i, final_j};
+    vector<dataItem> tmp;
+    if (pos != -1){
+        // Make a copy of the last vector of moves to expand on
+        tmp = jumps[pos];
+        tmp.push_back(move);
+        jumps.push_back(tmp);
+        countDuplicates++;
+    }
+    else{
+        tmp.push_back(move);
+        jumps.push_back(tmp);
+    }
 
-int CheckersBoard::checkJumps(int i, int j, int boardCopy[8][8], int pos){
+    int skip_i = midPoint(i, final_i);
+    int skip_j = midPoint(j, final_j);
+
+    // Remove captured piece from board copy, pass into recursive call
+    int tmpPiece = boardCopy[skip_i][skip_j];
+    int tmpCurr = boardCopy[i][j];
+    boardCopy[final_i][final_j] = boardCopy[i][j];
+    boardCopy[skip_i][skip_j] = 0;
+    boardCopy[i][j] = 0;
+    int position = jumps.size() - 1;
+    
+    checkJumps(final_i, final_j, boardCopy, jumps, position);
+
+    // Put piece back for other checks
+    boardCopy[skip_i][skip_j] = tmpPiece;
+    boardCopy[final_i][final_j] = 0;
+    boardCopy[i][j] = tmpCurr;
+
+    return 0;
+}
+
+
+int CheckersBoard::checkJumps(int i, int j, int (&state)[8][8], vector<vector<dataItem>> &jumps, int pos){
     
     // Turn tells us if the player is going up or down
     // Skip if it isnt your turn!
-    if ((turn < 0 && boardCopy[i][j] > 0) || (turn > 0 && boardCopy[i][j] < 0))
+    if ((turn < 0 && state[i][j] > 0) || (turn > 0 && state[i][j] < 0))
         return -1;
 
     // Boolean variables to store possible directions
@@ -280,7 +334,7 @@ int CheckersBoard::checkJumps(int i, int j, int boardCopy[8][8], int pos){
 
     // Check if the piece is allowed to move backwards:
     // Needs to be a King && can't step out of bounds
-    if ((boardCopy[i][j] == 2) || (boardCopy[i][j] == -2)){
+    if ((state[i][j] == 2) || (state[i][j] == -2)){
         if (i - 2 * turn > -1  &&  i - 2 * turn < 8){
             backwards = 1;
         }
@@ -291,36 +345,10 @@ int CheckersBoard::checkJumps(int i, int j, int boardCopy[8][8], int pos){
     // Right side jumps
     if (j <= 5 && forward){
         // Check for opposing side pieces on diagonal squares
-        if (boardCopy[i + turn][j + 1] == (turn * -1) || boardCopy[i + turn][j + 1] == (turn * -2)){
+        if (state[i + turn][j + 1] == (turn * -1) || state[i + turn][j + 1] == (turn * -2)){
             // Check if square directly after opposing side is empty
-            if (boardCopy[i + 2 * turn][j + 2] == 0){
-                dataItem move = {i, j, i + 2 * turn, j + 2};
-                vector<dataItem> tmp;
-                if (pos != -1){
-                    // Make a copy of the last vector of moves to expand on
-                    tmp = jumps[pos];
-                    tmp.push_back(move);
-                    jumps.push_back(tmp);
-                    countDuplicates++;
-                }
-                else{
-                    tmp.push_back(move);
-                    jumps.push_back(tmp);
-                }
-
-                // Remove captured piece from board copy, pass into recursive call
-                int tmpPiece = boardCopy[i + turn][j + 1];
-                int tmpCurr = boardCopy[i][j];
-                boardCopy[i + 2 * turn][j + 2] = boardCopy[i][j];
-                boardCopy[i + turn][j + 1] = 0;
-                boardCopy[i][j] = 0;
-                int position = jumps.size() - 1;
-                checkJumps(i + 2 * turn, j + 2,boardCopy, position);
-
-                // Put piece back for other checks
-                boardCopy[i + turn][j + 1] = tmpPiece;
-                boardCopy[i + 2 * turn][j + 2] = 0;
-                boardCopy[i][j] = tmpCurr;
+            if (state[i + 2 * turn][j + 2] == 0){
+                makeJump(state, i, j, i + 2 * turn, j + 2, countDuplicates, pos, jumps);
             }
         }
     }
@@ -328,106 +356,30 @@ int CheckersBoard::checkJumps(int i, int j, int boardCopy[8][8], int pos){
     // Left side jumps
     if (j >= 2 && forward){
         // Check for opposing side pieces on diagonal squares
-        if (boardCopy[i + turn][j - 1] == (turn * -1) || boardCopy[i + turn][j - 1] == (turn * -2)){
+        if (state[i + turn][j - 1] == (turn * -1) || state[i + turn][j - 1] == (turn * -2)){
             // Check if square directly after opposing side is empty
-            if (boardCopy[i + 2 * turn][j - 2] == 0){
-                dataItem move = {i, j, i + 2 * turn, j - 2};
-                vector<dataItem> tmp;
-                if (pos != -1){
-                    tmp = jumps[pos];
-                    tmp.push_back(move);
-                    jumps.push_back(tmp);
-                    countDuplicates++;
-                }
-                else{
-                    tmp.push_back(move);
-                    jumps.push_back(tmp);
-                }
-
-                // Remove captured piece from board copy
-                int tmpPiece = boardCopy[i + turn][j - 1];
-                int tmpCurr = boardCopy[i][j];
-                boardCopy[i + 2 * turn][j - 2] = boardCopy[i][j];
-                boardCopy[i + turn][j - 1] = 0;
-                boardCopy[i][j] = 0;
-
-                int position = jumps.size() - 1;
-                checkJumps(i + 2 * turn, j - 2, boardCopy, position);
-
-                // Put pieces back
-                boardCopy[i + turn][j - 1] = tmpPiece;
-                boardCopy[i + 2 * turn][j - 2] = 0;
-                board[i][j] = tmpCurr;
+            if (state[i + 2 * turn][j - 2] == 0){
+                makeJump(state, i, j, i + 2 * turn, j - 2, countDuplicates, pos, jumps);
             }
         }
     }
 
     // Right jumps (backwards)
     if (j <= 5 && backwards){
-        if (boardCopy[i - turn][j + 1] == (turn * -1) || boardCopy[i - turn][j + 1] == (turn * -2)){
+        if (state[i - turn][j + 1] == (turn * -1) || state[i - turn][j + 1] == (turn * -2)){
             // Check if square directly after opposing side is empty
-            if (boardCopy[i - 2 * turn][j + 2] == 0){
-                dataItem move = {i, j, i - 2 * turn, j + 2};
-                vector<dataItem> tmp;
-                if (pos != -1){
-                    tmp = jumps[pos];
-                    tmp.push_back(move);
-                    jumps.push_back(tmp);
-                    countDuplicates++;
-                }
-                else{
-                    tmp.push_back(move);
-                    jumps.push_back(tmp);
-                }
-                
-                // Remove captured piece from board copy
-                int tmpPiece = boardCopy[i - turn][j + 1];
-                int tmpCurr = boardCopy[i][j];
-                boardCopy[i - 2 * turn][j + 2] = board[i][j];
-                boardCopy[i - turn][j + 1] = 0;
-                boardCopy[i][j] = 0;
-                int position = jumps.size() - 1;
-                checkJumps(i - 2 * turn, j + 2, boardCopy, position);
-
-                // Put piece back
-                boardCopy[i - turn][j + 1] = tmpPiece;
-                boardCopy[i - 2 * turn][j + 2] = 0;
-                boardCopy[i][j] = tmpCurr;
+            if (state[i - 2 * turn][j + 2] == 0){
+                makeJump(state, i, j, i - 2 * turn, j + 2, countDuplicates, pos, jumps);
             }
         }
     }
     
     // Left jumps (backwards)
     if (j >=2 && backwards){
-        if (boardCopy[i - turn][j - 1] == (turn * -1) || boardCopy[i - turn][j - 1] == (turn * -2)){
+        if (state[i - turn][j - 1] == (turn * -1) || state[i - turn][j - 1] == (turn * -2)){
             // Check if square directly after opposing side is empty
-            if (boardCopy[i - 2 * turn][j - 2] == 0){
-                dataItem move = {i, j, i - 2 * turn, j - 2};
-                vector<dataItem> tmp;
-                if (pos != -1){
-                    tmp = jumps[pos];
-                    tmp.push_back(move);
-                    jumps.push_back(tmp);
-                    countDuplicates++;
-                }
-                else{
-                    tmp.push_back(move);
-                    jumps.push_back(tmp);
-                }
-
-                // Remove captured piece from board copy
-                int tmpPiece = boardCopy[i - turn][j - 1];
-                int tmpCurr = boardCopy[i][j];
-                boardCopy[i - 2 * turn][j - 2] = board[i][j];
-                boardCopy[i - turn][j - 1] = 0;
-                boardCopy[i][j] = 0;
-                int position = jumps.size() - 1;
-                checkJumps(i - 2 * turn, j - 2, boardCopy, position);
-
-                // Put piece back
-                boardCopy[i - turn][j - 1] = tmpPiece;
-                boardCopy[i - 2 * turn][j - 2] = 0;
-                boardCopy[i][j] = tmpCurr;
+            if (state[i - 2 * turn][j - 2] == 0){
+                makeJump(state, i, j, i - 2 * turn, j - 2, countDuplicates, pos, jumps);
             }
         }
 
@@ -442,7 +394,7 @@ int CheckersBoard::checkJumps(int i, int j, int boardCopy[8][8], int pos){
 }
 
 
-int CheckersBoard::checkDiagonal(int i, int j){
+int CheckersBoard::checkDiagonal(int i, int j, int (&state)[8][8], vector<dataItem> &moves){
 
     // Turn tells us if the player is going up or down
     // Skip if it isnt your turn!
@@ -500,12 +452,14 @@ int CheckersBoard::checkDiagonal(int i, int j){
     return 0;
 }
 
-
-int CheckersBoard::getMoves(){
+// Returns -1 when no moves are present
+// Returns 1 when a jump was made
+// Returns 0 when a diagonal move was made
+int CheckersBoard::getMoves(int (&state)[8][8], vector<vector<dataItem>> &jumps, vector<dataItem> &moves){
     int skip = 0;
     for(int i = 0; i < 8; i++){
         for(int j = 0; j < 8; j ++){
-            int tmp = board[i][j];
+            int tmp = state[i][j];
             
             //skip blank squares
             if(skip % 2 == 0){
@@ -513,16 +467,20 @@ int CheckersBoard::getMoves(){
                 continue;
             } else if (tmp != 0){
                 // check jumps, if none then diagonal moves
-                checkJumps(i, j, board, -1);
+                checkJumps(i, j, state, jumps, -1);
                 if (jumps.size() == 0)
-                    checkDiagonal(i, j);
+                    checkDiagonal(i, j, state, moves);
             }
             skip++;
         }
         skip++;
     }
-
-    return 0;
+    if (jumps.size())
+        return 1;
+    else if (moves.size())
+        return 0;
+    
+    return -1;
 }
 
 /*! Center-aligns string within a field of width w. Pads with blank spaces to enforce alignment. 

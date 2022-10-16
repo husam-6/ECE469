@@ -33,7 +33,7 @@ Game::Game(){
     }
 
     int numHumansInput;
-    cout << "Who's playing? Choose Computer vs Computer, Human vs Computer, or Human vs Human (1 / 2 / 3): ";
+    cout << "Who's playing? Choose Computer vs Computer, Human vs Computer, or Human vs Human (0 / 1 / 2): ";
     cin >> numHumansInput;
     
     numHumans = numHumansInput;
@@ -48,7 +48,7 @@ Game::Game(){
 
 // Make program pick a move (random for now)
 int Game::computerMove(int * type){
-    sleep(1);
+    sleep(2);
     int numOptions = board.getNumberOfOptions();
     int choice = rand() % numOptions;
     cout << "Computer choosing option: " << choice << "\n";
@@ -71,20 +71,21 @@ int Game::playGame(){
     while (board.testEnd()){
         // Make computer play as -1 by default.
         // If one computer is playing...
-        if (board.getTurn() == 1 && numHumans <= 2){
+        if (board.getTurn() == 1 && numHumans <= 1){
             computerMove(&type);
             continue;
         }
 
         // If both players are computers...
-        if (board.getTurn() == -1 && numHumans == 1){
+        if (board.getTurn() == -1 && numHumans == 0){
             computerMove(&type);
             continue;
         }
 
-        // Otherwise, human picks a move (numHumans == 3)
+        // Otherwise, human picks a move (numHumans == 2)
         cout << "Pick a move: ";
         cin >> option;
+        
         move = board.movePiece(option, type);
         if (move == -1)
             continue;

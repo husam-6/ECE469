@@ -44,7 +44,8 @@ class CheckersBoard {
         void printBoard();
 
         // Moves a piece
-        int movePiece(int option, int jump = 0);
+        int movePiece(int option, int jump);
+        int movePiece(int option, int jump, int (&state)[8][8]);
 
         // Check if no moves / no pieces are left
         int testEnd();
@@ -58,8 +59,8 @@ class CheckersBoard {
         // Getter for the number of options
         int getNumberOfOptions();
 
-        // Getter for time limit
-        int getTimeLimit();
+        // Mini Max search - Returns best option from current board state
+        int miniMax();
 
         // Constructor creates game defaulting to regular loaded board
         // 8 x 8 with 24 pieces (12 each player)
@@ -79,14 +80,19 @@ class CheckersBoard {
         
             // Returns pointer to array of valid coordinate moves for a given point
             // returns array of all valid moves for player
-            int getMoves();
+            int getMoves(int (&state)[8][8], std::vector<std::vector<dataItem>> &jumps, std::vector<dataItem> &moves);
 
             // Check for valid diagonal moves at given coordinate
             // Returns array of valid diagonal moves
-            int checkDiagonal(int i, int j);
+            int checkDiagonal(int i, int j, int (&state)[8][8], std::vector<dataItem> &moves);
 
             // Check for valid jumps at given coordinate
-            int checkJumps(int i, int j, int boardCopy[8][8], int pos = -1);
+            int checkJumps(int i, int j, int (&state)[8][8], std::vector<std::vector<dataItem>> &jumps, int pos = -1);
+
+            // Helper function for checkJumps
+            int makeJump(int (&boardCopy)[8][8],
+                         int i, int j, int final_i, int final_j,
+                         int &countDuplicates, int pos, std::vector<std::vector<dataItem>> &jumps);
 
             // Turn piece into a king
             void makeKing(int i, int j);
@@ -104,15 +110,19 @@ class CheckersBoard {
             // Indicates whose turn it is -> 1 for Blue and -1 for Red
             int turn;
 
-            // Counters to keep track of the number of pieces
-            int numRed;
-            int numBlue;
-            int numRedKings;
-            int numBlueKings;
-
             // vectors to store possible jumps / diagonal moves
             std::vector<std::vector<dataItem>> jumps;
             std::vector<dataItem> moves;
+
+            // Functions for mini max search with alpha beta pruning
+            int maxValue(int (&state)[8][8], int alpha, int beta, int depth);
+            int minValue(int (&state)[8][8], int alpha, int beta, int depth);
+
+            // Function to determine if we've reached a cut off state
+            int isCutOff(int (&state)[8][8], int depth);
+
+            // Heuristic to evaluate move 
+            int eval(int (&state)[8][8], int turn);
 
 };
 

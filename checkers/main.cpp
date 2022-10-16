@@ -1,12 +1,13 @@
 #include "board.h"
 #include "game.h"
 #include <unordered_map>
+#include<time.h>
 
 using namespace std;
 
 int main(){
-    // CheckersBoard test = CheckersBoard("none", 1); 
 
+    srand(time(NULL));
     Game checkers = Game();
     checkers.playGame();
 
