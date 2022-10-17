@@ -48,9 +48,15 @@ Game::Game(){
 
 // Make program pick a move (random for now)
 int Game::computerMove(int * type){
-    sleep(2);
+    sleep(1);
     int numOptions = board.getNumberOfOptions();
-    int choice = rand() % numOptions;
+    int choice;
+    if (numOptions == 1){
+        choice = 0;
+    }
+    else
+        choice = board.miniMax();
+    // int choice = rand() % numOptions;
     cout << "Computer choosing option: " << choice << "\n";
     board.movePiece(choice, (*type));
     board.printBoard();

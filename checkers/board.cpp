@@ -159,49 +159,19 @@ int CheckersBoard::printOptions(){
     return -1;
 }
 
-void CheckersBoard::makeKing(int i, int j){
-    if (board[i][j] == -2 || board[i][j] == 2)
+void CheckersBoard::makeKing(int i, int j, int (&state)[8][8]){
+    if (state[i][j] == -2 || state[i][j] == 2)
         return;
     if (turn == -1){
         if (i == 0){
-            board[i][j] *= 2; 
+            state[i][j] *= 2; 
         }
     }
     else if (turn == 1){
         if (i == 7){
-            board[i][j] *= 2;
+            state[i][j] *= 2;
         }
     }
-}
-
-// Heuristic evaluation of the board state
-int CheckersBoard::eval(int (&state)[8][8], int turn){
-
-    // RED is always positive (MAX), BLUE is always negative (MIN)
-    int w1 = 3;
-    int w2 = 5;
-
-    int numPawns, numKings; 
-    numPawns = numKings = 0; 
-
-    // Simple heuristic for now - number of 5 * kings + 3 * pawns
-    int counter = 0;
-    for (int i = 0; i < 8; i++){
-        for (int j = 0; j < 8; j++){
-            if (counter % 2 == 0){
-                counter++;
-                continue;
-            }
-            if (state[i][j] == turn)
-                numPawns++; 
-            else if (state[i][j] == 2 * turn)
-                numKings++;
-            counter++;
-        }
-        counter++;
-    }
-
-    return turn * (w1 * numPawns + w2 * numKings);
 }
 
 // Helper function for movePiece function
@@ -210,12 +180,19 @@ int midPoint(int x1, int x2){
 }
 
 int CheckersBoard::movePiece(int option, int jump){
-    movePiece(option, jump, board);
-    return 0;
+    int val = movePiece(option, jump, board, turn, jumps, moves);
+    
+    if (val != -1){
+        jumps.clear();
+        moves.clear();
+    }
+        
+    return val;
 }
 
 
-int CheckersBoard::movePiece(int option, int jump, int (&state)[8][8]){
+int CheckersBoard::movePiece(int option, int jump, int (&state)[8][8], int &turn,
+                             vector<vector<dataItem>> &jumps, vector<dataItem> &moves){
     // Check if option given is out of bounds..
     if (jump){
         if (option >= jumps.size() || option < 0)
@@ -231,10 +208,10 @@ int CheckersBoard::movePiece(int option, int jump, int (&state)[8][8]){
         dataItem move = moves[option];
         state[move.x][move.y] = state[move.x_initial][move.y_initial];
         state[move.x_initial][move.y_initial] = 0;
-        moves.clear();
+        // moves.clear();
 
         // Check if we can turn the piece into a king
-        makeKing(move.x, move.y);
+        makeKing(move.x, move.y, state);
 
         turn = turn * -1; 
         return 0;
@@ -261,15 +238,14 @@ int CheckersBoard::movePiece(int option, int jump, int (&state)[8][8]){
     state[move.x][move.y] = tmpPiece;
 
     // Remove elements from array 
-    jumps.clear();
-    moves.clear();
+    // jumps.clear();
+    // moves.clear();
 
     // Check if we can turn the piece into a king
-    makeKing(move.x, move.y);
+    makeKing(move.x, move.y, state);
 
     // Change turn to the other player
     turn = turn * -1;
-
 
     return 0;
 }
@@ -341,7 +317,6 @@ int CheckersBoard::checkJumps(int i, int j, int (&state)[8][8], vector<vector<da
     }
 
     int countDuplicates = 0;
-
     // Right side jumps
     if (j <= 5 && forward){
         // Check for opposing side pieces on diagonal squares
@@ -387,7 +362,6 @@ int CheckersBoard::checkJumps(int i, int j, int (&state)[8][8], vector<vector<da
 
     if (pos != -1 && countDuplicates > 0)
         jumps.erase(jumps.begin() + pos);
-
 
     return 0;
 
