@@ -48,10 +48,10 @@ Game::Game(){
 
 // Make program pick a move (random for now)
 int Game::computerMove(int * type){
-    sleep(1);
     int numOptions = board.getNumberOfOptions();
     int choice;
     if (numOptions == 1){
+        sleep(2);
         choice = 0;
     }
     else

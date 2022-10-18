@@ -79,9 +79,11 @@ class CheckersBoard {
         CheckersBoard(std::string load_file = "startGame.txt", int playerTurn = 1);
 
         private:
-        
-            // Returns pointer to array of valid coordinate moves for a given point
-            // returns array of all valid moves for player
+
+            // Store all legal moves vector references passed in        
+            // Returns -1 when no moves are present
+            // Returns 1 when a jump was made
+            // Returns 0 when a diagonal move was made
             int getMoves(int (&state)[8][8], std::vector<std::vector<dataItem>> &jumps, std::vector<dataItem> &moves);
 
             // Check for valid diagonal moves at given coordinate
@@ -117,8 +119,8 @@ class CheckersBoard {
             std::vector<dataItem> moves;
 
             // Functions for mini max search with alpha beta pruning
-            int * maxValue(int (&state)[8][8], int alpha, int beta, int depth, int currOption, int &turn);
-            int * minValue(int (&state)[8][8], int alpha, int beta, int depth, int currOption, int &turn);
+            int * maxValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn);
+            int * minValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn);
 
             // Function to determine if we've reached a cut off state
             // Returns 0 if not a cutoff state
@@ -129,6 +131,8 @@ class CheckersBoard {
             int eval(int (&state)[8][8], int turn);
 
             int currentDepth = 1;
+
+            int startTime; 
 
 };
 

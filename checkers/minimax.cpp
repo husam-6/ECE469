@@ -39,36 +39,48 @@ int CheckersBoard::isCutOff(int depth, vector<vector<dataItem>> &jumps, vector<d
     if (depth == currentDepth){
         return 1;
     }
+    else if ((clock() - float(startTime)) / CLOCKS_PER_SEC >= (timeLimit - 0.5)){
+        return 1;
+    }
     else if ((jumps.size() + moves.size()) == 0){
         return 1;
     }
     return 0;
-
 }
+
+void copyArr(int (&state)[8][8], int (&stateCopy)[8][8]){
+    for (int i = 0; i < 8; i++){
+        for (int j = 0; j < 8; j++){
+            stateCopy[i][j] = state[i][j];   
+        }
+    }
+}
+
 
 // Wrapper function for Mini Max Algorithm
 int CheckersBoard::miniMax(){
     int turn = 1;
     int * max;
-    int timeStart = clock();
+    startTime = clock();
 
     // For iterative deepening - call maxValue again incrementing how deep we can go 
     while(true){
-        if ((clock() - float(timeStart)) / CLOCKS_PER_SEC >= (timeLimit - 0.5)) // time in seconds
+        if ((clock() - float(startTime)) / CLOCKS_PER_SEC >= (timeLimit - 0.5)) // time in seconds
             break;
-        max = maxValue(board, INT_MIN, INT_MAX, 0, -1, turn);
+        max = maxValue(board, INT_MIN, INT_MAX, 0, turn);
         currentDepth++;
+        // cout << "Option: " << *(max + 1) << '\n';
     }
 
-    cout << "Time spent searching: " << (clock() - float(timeStart)) / CLOCKS_PER_SEC << " seconds" << "\n";
+    cout << "Time spent searching: " << (clock() - float(startTime)) / CLOCKS_PER_SEC << " seconds" << "\n";
 
-    currentDepth = 0; 
+    currentDepth = 0;
+
     return *(max + 1);
 }
 
 // Max Value for minimax algorithm
-int * CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, int depth,
-                              int currOption, int &turn){
+int * CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn){
     int stateCopy[8][8];
     // Vectors to store each move
     vector<vector<dataItem>> jumps;
@@ -79,69 +91,43 @@ int * CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, int depth
         static int v[2];
         // Pass back up the evaluation and its corresponding 'option' (ie which move is associated)
         v[0] = eval(state, turn);
-        v[1] = currOption;
+        v[1] = 0;
         return v;
     }
 
     // Iterate through all possible actions / children
-    static int v[2] = {INT_MIN, -1};
+    static int v[2] = {INT_MIN, 0};
     int * min_v;
-    int option = -1;
+    int size = moves.size();
     if(jumps.size()){
-        for (int i = 0; i < jumps.size(); i++){
-            // Make a copy of the board state
-            for (int i = 0; i < 8; i++){
-                for (int j = 0; j < 8; j++){
-                    stateCopy[i][j] = state[i][j];   
-                }
-            }
-            // Get the resulting state for each move (stored in stateCopy)
-            movePiece(i, 1, stateCopy, turn, jumps, moves);
-            min_v = minValue(stateCopy, alpha, beta, depth + 1, i, turn);
-            if ((*min_v) > v[0]){
-                v[0] = *min_v;
-                v[1] = *(min_v + 1);
-            }
-            if (v[0] >= beta){
-                jumps.clear();
-                moves.clear();
-                return v;
-            }
+        size = jumps.size();
+    } 
+    for (int i = 0; i < size; i++){
+        // Make a copy of the board state
+        copyArr(state, stateCopy);
+        // Get the resulting state for each move (stored in stateCopy)
+        movePiece(i, jump, stateCopy, turn, jumps, moves);
+        min_v = minValue(stateCopy, alpha, beta, depth + 1, turn);
+        if ((*min_v) > v[0] || ((*min_v) == v[0] && rand() % 2 == 0)){
+            v[0] = *min_v;
+            v[1] = i;
             alpha = max(alpha, v[0]);
         }
-        jumps.clear();
-        moves.clear();
-        return v;
-
-    } else{
-        for (int i = 0; i < moves.size(); i++){
-            // Make a copy of the board state
-            for (int i = 0; i < 8; i++){
-                for (int j = 0; j < 8; j++){
-                    stateCopy[i][j] = state[i][j];   
-                }
-            }
-            // Get the resulting state for each move (stored in stateCopy)
-            movePiece(i, 0, stateCopy, turn, jumps, moves);
-            min_v = minValue(stateCopy, alpha, beta, depth + 1, i, turn);
-            if ((*min_v) > v[0]){
-                v[0] = *min_v;
-                v[1] = *(min_v + 1);
-            }
-            if (v[0] >= beta){
-                moves.clear();
-                return v;
-            }
-            alpha = max(alpha, v[0]);
+        if (v[0] >= beta){
+            jumps.clear();
+            moves.clear();
+            v[0]--;
+            v[1] = i;
+            return v;
         }
-        moves.clear();
-        return v;
     }
+    jumps.clear();
+    moves.clear();
+    return v;
 
 }
 
-int * CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, int depth,
-                              int currOption, int &turn){
+int * CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn){
     int stateCopy[8][8];
     // Vectors to store each move
     vector<vector<dataItem>> jumps;
@@ -152,64 +138,39 @@ int * CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, int depth
         static int v[2];
         // Pass back up the evaluation and its corresponding 'option' (ie which move is associated)
         v[0] = eval(state, turn);
-        v[1] = currOption;
+        v[1] = 0;
         return v;
     }
 
     // Iterate through all possible actions / children
-    static int v[2] = {INT_MAX, -1};
+    static int v[2] = {INT_MAX, 0};
     int * min_v;
-    int option = -1;
+    int size = moves.size();
     if(jumps.size()){
-        for (int i = 0; i < jumps.size(); i++){
-            // Make a copy of the board state
-            for (int i = 0; i < 8; i++){
-                for (int j = 0; j < 8; j++){
-                    stateCopy[i][j] = state[i][j];   
-                }
-            }
-            // Get the resulting state for each move (stored in stateCopy)
-            movePiece(i, 1, stateCopy, turn, jumps, moves);
-            min_v = maxValue(stateCopy, alpha, beta, depth + 1, i, turn);
-            if ((*min_v) < v[0]){
-                v[0] = *min_v;
-                v[1] = *(min_v + 1);
-            }
-            if (v[0] <= alpha){
-                jumps.clear();
-                moves.clear();
-                return v;
-            }
-            beta = min(beta, v[0]);
-        }
-        jumps.clear();
-        moves.clear();
-        return v;
-
-    } else{
-        for (int i = 0; i < moves.size(); i++){
-            // Make a copy of the board state
-            for (int i = 0; i < 8; i++){
-                for (int j = 0; j < 8; j++){
-                    stateCopy[i][j] = state[i][j];   
-                }
-            }
-            // Get the resulting state for each move (stored in stateCopy)
-            movePiece(i, 0, stateCopy, turn, jumps, moves);
-            min_v = maxValue(stateCopy, alpha, beta, depth + 1, i, turn);
-            if ((*min_v) < v[0]){
-                v[0] = *min_v;
-                v[1] = *(min_v + 1);
-            }
-            if (v[0] <= alpha){
-                moves.clear();
-                return v;
-            }
-            beta = min(beta, v[0]);
-        }
-        moves.clear();
-        return v;
+        size = jumps.size();
     }
-    
+    for (int i = 0; i < size; i++){
+        // Make a copy of the board state
+        copyArr(state, stateCopy);
+
+        // Get the resulting state for each move (stored in stateCopy)
+        movePiece(i, jump, stateCopy, turn, jumps, moves);
+        min_v = maxValue(stateCopy, alpha, beta, depth + 1, turn);
+        if ((*min_v) < v[0] || ((*min_v) == v[0] && rand() % 2 == 0)){
+            v[0] = *min_v;
+            v[1] = i;
+            beta = min(beta, v[0]);
+        }
+        if (v[0] <= alpha){
+            jumps.clear();
+            moves.clear();
+            v[0]++;
+            v[1] = i;
+            return v;
+        }
+    }
+    jumps.clear();
+    moves.clear();
+    return v;
 
 }
