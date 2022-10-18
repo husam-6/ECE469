@@ -11,6 +11,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <queue>
+#include <array>
 
 // For colors
 #define RESET   "\033[0m"
@@ -119,8 +120,8 @@ class CheckersBoard {
             std::vector<dataItem> moves;
 
             // Functions for mini max search with alpha beta pruning
-            int * maxValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn);
-            int * minValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn);
+            std::array<int, 2> maxValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn);
+            std::array<int, 2> minValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn);
 
             // Function to determine if we've reached a cut off state
             // Returns 0 if not a cutoff state

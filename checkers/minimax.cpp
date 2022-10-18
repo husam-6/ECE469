@@ -1,9 +1,6 @@
 #include "board.h"
-#include <unordered_map>
 
 using namespace std; 
-
-
 
 // Heuristic evaluation of the board state
 int CheckersBoard::eval(int (&state)[8][8], int turn){
@@ -59,8 +56,8 @@ void copyArr(int (&state)[8][8], int (&stateCopy)[8][8]){
 
 // Wrapper function for Mini Max Algorithm
 int CheckersBoard::miniMax(){
-    int turn = 1;
-    int * max;
+    int turn = this->turn;
+    array<int, 2> max;
     startTime = clock();
 
     // For iterative deepening - call maxValue again incrementing how deep we can go 
@@ -76,19 +73,19 @@ int CheckersBoard::miniMax(){
 
     currentDepth = 0;
 
-    return *(max + 1);
+    return max[1];
 }
 
 // Max Value for minimax algorithm
-int * CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn){
+array<int, 2> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn){
     int stateCopy[8][8];
     // Vectors to store each move
     vector<vector<dataItem>> jumps;
     vector<dataItem> moves; 
     int jump = getMoves(state, jumps, moves);
+    array<int, 2> v; 
 
     if (isCutOff(depth, jumps, moves)){
-        static int v[2];
         // Pass back up the evaluation and its corresponding 'option' (ie which move is associated)
         v[0] = eval(state, turn);
         v[1] = 0;
@@ -96,10 +93,10 @@ int * CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, int depth
     }
 
     // Iterate through all possible actions / children
-    static int v[2] = {INT_MIN, 0};
-    int * min_v;
+    v = {INT_MIN, 0};
+    array<int, 2> min_v;
     int size = moves.size();
-    if(jumps.size()){
+    if(jumps.size() > 0){
         size = jumps.size();
     } 
     for (int i = 0; i < size; i++){
@@ -108,8 +105,8 @@ int * CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, int depth
         // Get the resulting state for each move (stored in stateCopy)
         movePiece(i, jump, stateCopy, turn, jumps, moves);
         min_v = minValue(stateCopy, alpha, beta, depth + 1, turn);
-        if ((*min_v) > v[0] || ((*min_v) == v[0] && rand() % 2 == 0)){
-            v[0] = *min_v;
+        if (min_v[0] > v[0] || (min_v[0] == v[0] && rand() % 2 == 0)){
+            v[0] = min_v[0];
             v[1] = i;
             alpha = max(alpha, v[0]);
         }
@@ -127,15 +124,15 @@ int * CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, int depth
 
 }
 
-int * CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn){
+array<int, 2> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn){
     int stateCopy[8][8];
     // Vectors to store each move
     vector<vector<dataItem>> jumps;
     vector<dataItem> moves; 
     int jump = getMoves(state, jumps, moves);
+    array<int, 2> v;
 
     if (isCutOff(depth, jumps, moves)){
-        static int v[2];
         // Pass back up the evaluation and its corresponding 'option' (ie which move is associated)
         v[0] = eval(state, turn);
         v[1] = 0;
@@ -143,10 +140,10 @@ int * CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, int depth
     }
 
     // Iterate through all possible actions / children
-    static int v[2] = {INT_MAX, 0};
-    int * min_v;
+    v = {INT_MAX, 0};
+    array<int, 2> min_v;
     int size = moves.size();
-    if(jumps.size()){
+    if(jumps.size() > 0){
         size = jumps.size();
     }
     for (int i = 0; i < size; i++){
@@ -156,8 +153,8 @@ int * CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, int depth
         // Get the resulting state for each move (stored in stateCopy)
         movePiece(i, jump, stateCopy, turn, jumps, moves);
         min_v = maxValue(stateCopy, alpha, beta, depth + 1, turn);
-        if ((*min_v) < v[0] || ((*min_v) == v[0] && rand() % 2 == 0)){
-            v[0] = *min_v;
+        if (min_v[0] < v[0] || (min_v[0] == v[0] && rand() % 2 == 0)){
+            v[0] = min_v[0];
             v[1] = i;
             beta = min(beta, v[0]);
         }
