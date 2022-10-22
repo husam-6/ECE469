@@ -106,7 +106,7 @@ void printCoords(int y, int x){
 // Returns 0 when a diagonal move was made
 int CheckersBoard::printOptions(){
     // Store possible moves in a vector (jumps and moves member functions)
-    int returnValue = getMoves(board, jumps, moves);
+    int returnValue = getMoves(board, jumps, moves, turn);
 
     // Print out numbered options...
     string color; 
@@ -429,7 +429,7 @@ int CheckersBoard::checkDiagonal(int i, int j, int (&state)[8][8], vector<dataIt
 // Returns -1 when no moves are present
 // Returns 1 when a jump was made
 // Returns 0 when a diagonal move was made
-int CheckersBoard::getMoves(int (&state)[8][8], vector<vector<dataItem>> &jumps, vector<dataItem> &moves){
+int CheckersBoard::getMoves(int (&state)[8][8], vector<vector<dataItem>> &jumps, vector<dataItem> &moves, int turn){
     int skip = 0;
     for(int i = 0; i < 8; i++){
         for(int j = 0; j < 8; j ++){

@@ -85,7 +85,9 @@ class CheckersBoard {
             // Returns -1 when no moves are present
             // Returns 1 when a jump was made
             // Returns 0 when a diagonal move was made
-            int getMoves(int (&state)[8][8], std::vector<std::vector<dataItem>> &jumps, std::vector<dataItem> &moves);
+            int getMoves(int (&state)[8][8],
+                         std::vector<std::vector<dataItem>> &jumps, std::vector<dataItem> &moves,
+                         int turn);
 
             // Check for valid diagonal moves at given coordinate
             // Returns array of valid diagonal moves
@@ -120,8 +122,8 @@ class CheckersBoard {
             std::vector<dataItem> moves;
 
             // Functions for mini max search with alpha beta pruning
-            std::array<int, 2> maxValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn);
-            std::array<int, 2> minValue(int (&state)[8][8], int alpha, int beta, int depth, int &turn);
+            std::array<int, 3> maxValue(int (&state)[8][8], int alpha, int beta, int depth);
+            std::array<int, 3> minValue(int (&state)[8][8], int alpha, int beta, int depth);
 
             // Function to determine if we've reached a cut off state
             // Returns 0 if not a cutoff state
@@ -129,7 +131,7 @@ class CheckersBoard {
             int isCutOff(int depth, std::vector<std::vector<dataItem>> &jumps, std::vector<dataItem> &moves);
 
             // Heuristic to evaluate move 
-            int eval(int (&state)[8][8], int turn);
+            int eval(int (&state)[8][8], int turn, int cut);
 
             int currentDepth = 1;
 
