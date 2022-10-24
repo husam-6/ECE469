@@ -43,6 +43,7 @@ class CheckersBoard {
 
         // Display board state
         void printBoard();
+        void printBoard(int (&state)[8][8]);
 
         // Item to store coordinates of a move 
         class dataItem{
@@ -80,6 +81,8 @@ class CheckersBoard {
         CheckersBoard(std::string load_file = "startGame.txt", int playerTurn = 1);
 
         private:
+            // Overloaded print option for debugging
+            int printOptions(std::vector<std::vector<dataItem>> &jumps, std::vector<dataItem> &moves, int &turn);
 
             // Store all legal moves vector references passed in        
             // Returns -1 when no moves are present
@@ -91,15 +94,16 @@ class CheckersBoard {
 
             // Check for valid diagonal moves at given coordinate
             // Returns array of valid diagonal moves
-            int checkDiagonal(int i, int j, int (&state)[8][8], std::vector<dataItem> &moves);
+            int checkDiagonal(int i, int j, int (&state)[8][8], std::vector<dataItem> &moves, int playerTurn);
 
             // Check for valid jumps at given coordinate
-            int checkJumps(int i, int j, int (&state)[8][8], std::vector<std::vector<dataItem>> &jumps, int pos = -1);
+            int checkJumps(int i, int j, int (&state)[8][8],
+                           std::vector<std::vector<dataItem>> &jumps, int playerTurn, int pos = -1);
 
             // Helper function for checkJumps
             int makeJump(int (&boardCopy)[8][8],
-                         int i, int j, int final_i, int final_j,
-                         int &countDuplicates, int pos, std::vector<std::vector<dataItem>> &jumps);
+                         int i, int j, int final_i, int final_j, int &countDuplicates,
+                         int playerTurn, int pos, std::vector<std::vector<dataItem>> &jumps);
 
             // Turn piece into a king
             void makeKing(int i, int j, int (&state)[8][8]);
@@ -122,8 +126,8 @@ class CheckersBoard {
             std::vector<dataItem> moves;
 
             // Functions for mini max search with alpha beta pruning
-            std::array<int, 3> maxValue(int (&state)[8][8], int alpha, int beta, int depth);
-            std::array<int, 3> minValue(int (&state)[8][8], int alpha, int beta, int depth);
+            std::array<int, 3> maxValue(int (&state)[8][8], int alpha, int beta, int depth, bool debug = false);
+            std::array<int, 3> minValue(int (&state)[8][8], int alpha, int beta, int depth, bool debug = false);
 
             // Function to determine if we've reached a cut off state
             // Returns 0 if not a cutoff state

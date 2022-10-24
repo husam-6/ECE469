@@ -28,11 +28,14 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
         counter++;
     }
     
-    // Trying to account for definite wins
-    int ret = playerTurn * total;
-    if (cut == 3){
-        ret += playerTurn * 1000000;
-    }
+    // Trying to account for definite wins / losses
+    int ret = total;
+    // if (cut == 3 && playerTurn == -1){
+    //     ret += 100000;
+    // }
+    // if (cut == 3 && playerTurn == 1){
+    //     ret -= 100000;
+    // }
     return ret;
 }
 
@@ -84,13 +87,13 @@ int CheckersBoard::miniMax(){
 
     // For iterative deepening - call maxValue again incrementing how deep we can go 
     while(true){
-        // currentDepth = 3;
+        currentDepth = 3;
         int state[8][8];
         copyArr(board, state);
         if (turn == 1)
-            tmp = maxValue(state, INT_MIN, INT_MAX, 0);
+            tmp = maxValue(state, INT_MIN, INT_MAX, 0, false);
         else if (turn == -1)
-            tmp = minValue(state, INT_MIN, INT_MAX, 0);
+            tmp = minValue(state, INT_MIN, INT_MAX, 0, false);
         if (!tmp[2])
             max = tmp;
         else
@@ -99,7 +102,6 @@ int CheckersBoard::miniMax(){
     }
 
     cout << "Time spent searching: " << (clock() - float(startTime)) / CLOCKS_PER_SEC << " seconds" << "\n";
-    cout << "Evaluation: " << max[0] << "\n";
 
     currentDepth = 1;
 
@@ -107,24 +109,35 @@ int CheckersBoard::miniMax(){
 }
 
 // Max Value for minimax algorithm
-array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, int depth){
+array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, int depth, bool debug){
     int stateCopy[8][8];
     int playerTurn = 1;
     // Vectors to store each move
     vector<vector<dataItem>> jumps;
     vector<dataItem> moves; 
     int jump = getMoves(state, jumps, moves, 1);
+
     array<int, 3> v;
+    if (debug){
+        cout << "Board for depth: " << depth << " for player " << playerTurn << "\n";
+        cout << "Evaluation: " << eval(state, playerTurn, 0) << '\n';
+        printBoard(state);
+        printOptions(jumps, moves, turn);
+    }
 
 
     if (int cut = isCutOff(depth, jumps, moves)){
         // Pass back up the evaluation and its corresponding 'option' (ie which move is associated)
         v[0] = eval(state, playerTurn, cut);
+        // v[0] = evaluate(state, playerTurn);
         v[1] = 0;
         v[2] = 0;
-        // cout << string(depth, '\t') << "v = " << v[0] << ", depth = " << depth << "\n";
         if (cut == 2)
             v[2] = 1;
+        if (debug){
+            cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+            cout << "DEPTH: " << depth << ", depth limit " << "\n";
+        }
         return v;
     }
 
@@ -138,9 +151,10 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
     for (int i = 0; i < size; i++){
         // Make a copy of the board state
         copyArr(state, stateCopy);
-        movePiece(i, jump, stateCopy, playerTurn, jumps, moves);
-        min_v = minValue(stateCopy, alpha, beta, depth + 1);
-        if (min_v[0] > v[0] || (min_v[0] == v[0] && rand() % 2 == 0) || min_v[2] == 1){
+        int copy = playerTurn;
+        movePiece(i, jump, stateCopy, copy, jumps, moves);
+        min_v = minValue(stateCopy, alpha, beta, depth + 1, debug);
+        if (min_v[0] > v[0] ||  min_v[2] == 1){
             v[0] = min_v[0];
             v[1] = i;
             v[2] = min_v[2];
@@ -152,18 +166,29 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
             v[0]--;
             v[1] = i;
             v[2] = min_v[2];
-            // cout << string(depth, '\t') << "v = " << v[0] << ", option = " << v[1] << ", depth = " << depth << ", PRUNE" << "\n";
+
+            if (debug){
+                cout << "v = " << v[0] << " Beta = " << beta << "\n";
+                cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+                cout << "DEPTH: " << depth << ", PRUNE " << "\n";
+                printBoard(stateCopy);
+            }
             return v;
         }
     }
     jumps.clear();
     moves.clear();
-    // cout << string(depth, '\t') << "v = " << v[0] << ", option = " << v[1] << ", depth = " << depth <<  ", PRUNE" << "\n";
+
+    if (debug){
+        cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+        cout << "DEPTH: " << depth << "\n";
+        printBoard(stateCopy);
+    }
     return v;
 
 }
 
-array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, int depth){
+array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, int depth, bool debug){
     int stateCopy[8][8];
     int playerTurn = -1;
     // Vectors to store each move
@@ -172,14 +197,26 @@ array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, i
     int jump = getMoves(state, jumps, moves, playerTurn);
     array<int, 3> v;
 
+    if (debug){
+        cout << "Board for depth: " << depth << " for player " << playerTurn << "\n";
+        cout << "Evaluation: " << eval(state, playerTurn, 0) << '\n';
+        printBoard(state);
+        printOptions(jumps, moves, turn);
+    }
+
     if (int cut = isCutOff(depth, jumps, moves)){
         // Pass back up the evaluation and its corresponding 'option' (ie which move is associated)
         v[0] = eval(state, playerTurn, cut);
+        // v[0] = evaluate(state, playerTurn);
         v[1] = 0;
         v[2] = 0;
         if (cut == 2)
             v[2] = 1;
-        // cout << string(depth, '\t') << "v = " << v[0] << ", depth = " << depth << '\n';
+        if (debug){
+            cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+            cout << "DEPTH: " << depth << ", Depth limit" << "\n";
+            printBoard(state);
+        }
         return v;
     }
 
@@ -190,14 +227,16 @@ array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, i
     if(jumps.size() > 0){
         size = jumps.size();
     }
+    // cout << "GET HERE" << '\n' << "SIZE = " << size << '\n';
     for (int i = 0; i < size; i++){
         // Make a copy of the board state
         copyArr(state, stateCopy);
-
         // Get the resulting state for each move (stored in stateCopy)
-        movePiece(i, jump, stateCopy, playerTurn, jumps, moves);
-        min_v = maxValue(stateCopy, alpha, beta, depth + 1);
-        if (min_v[0] < v[0] || (min_v[0] == v[0] && rand() % 2 == 0) || min_v[2] == 1){
+        int copy = playerTurn;
+        movePiece(i, jump, stateCopy, copy, jumps, moves);
+        min_v = maxValue(stateCopy, alpha, beta, depth + 1, debug);
+        // if (min_v[0] < v[0] || (min_v[0] == v[0] && rand() % 4 == 0) || min_v[2] == 1){
+        if (min_v[0] < v[0] || min_v[2] == 1){
             v[0] = min_v[0];
             v[1] = i;
             v[2] = min_v[2];
@@ -209,13 +248,23 @@ array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, i
             v[0]++;
             v[1] = i;
             v[2] = min_v[2];
-            // cout << string(depth, '\t') << "v = " << v[0] << ", option = " << i << ", depth = " << depth << ", PRUNE" << "\n";
+            if (debug){
+                cout << "v = " << v[0] << " alpha = " << alpha << "\n";
+                cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+                cout << "DEPTH: " << depth << ", PRUNE" << "\n";
+                printBoard(stateCopy);
+            }
             return v;
         }
     }
+    
+    if (debug){
+        cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+        cout << "DEPTH: " << depth << "\n";
+        printBoard(stateCopy);
+    }
     jumps.clear();
     moves.clear();
-    // cout << string(depth, '\t') << "v = " << v[0] << ", option = " << v[1] << ", depth = " << depth << "\n";
     return v;
 
 }
