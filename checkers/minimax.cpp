@@ -2,13 +2,70 @@
 
 using namespace std; 
 
+//black is more positive
+//red is more negative
+//aabbccddee
+//aa is a count of all pieces: king is worth a total of 3, regular pieces are 2 (black - red)
+//bb is measuring how close a normal piece is to becoming a king, give last row a bonus
+//cc is a piece count difference
+//dd is a measurement near end game, double corners add a bonus for losing player
+//ee is pseudo-random in the case that multiple moves tie for best
+int evaluate(int (&arr)[8][8], int playerTurn){
+	int a1 = 0, a2 = 0, b = 0, c = 0, d = 0;
+	for (int i = 0; i != 8; ++i)
+		for (int j = 0; j != 4; ++j)
+		{
+			if (arr[i][j] == 1)
+			{
+				a1 += 2;
+				if (i == 0)
+					b += 9;
+				else b += i;
+				c += 1;
+			}
+			else if (arr[i][j] == -1)
+			{
+				a2 -=2;
+				if (i == 7)
+					b -= 9;
+				else b -= (7 - i);
+				c -= 1;
+			}
+			else if (arr[i][j] == 2)
+			{
+				a1 += 3;
+				c += 1;
+			}
+			else if (arr[i][j] == -2)
+			{
+				a2 -= 3;
+				c -= 1;
+			}
+		}
+	// if (c > 0 && a2 >= -8)
+	// 	d -= cornerDiagonal('r', 'b');
+	// else if (c < 0 && a1 <= 8)
+	// 	d += cornerDiagonal('b', 'r');
+	a1 *= 100000000;
+	a2 *= 100000000;
+	b *= 1000000;
+	c *= 10000;
+	d *= 100;
+	int e = rand() % 100;
+	if (playerTurn == -1)
+		e = -e;
+	return a1 + a2 + b + c + d + e;
+}
+
+
 // Heuristic evaluation of the board state
 // NEED TO ACCOUNT FOR DEFINITE WINS!!!!!!!
 int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     // RED is always positive (MAX), BLUE is always negative (MIN)
-    int w1 = 30;
-    int w2 = 50;
-    int tmp, weight;
+    int w1 = 300;
+    int w2 = 500;
+    int tmp;
+    int weight = 0;
 
     // Simple heuristic for now - 5 * kings + 3 * pawns
     int counter = 0;
@@ -31,17 +88,17 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
         counter++;
     }
 
-    int ties = rand() % 10 - 5;
+    int ties = rand() % 4 - 3;
     
     // Trying to account for definite wins / losses
     int ret = total + ties;
 
-    if (cut == 3 && playerTurn == -1 && this->turn == 1){
-        ret += 100000;
-    }
-    if (cut == 3 && playerTurn == 1 && this->turn == -1){
-        ret -= 100000;
-    }
+    // if (cut == 3 && playerTurn == -1 && this->turn == 1){
+    //     ret += 100000;
+    // }
+    // if (cut == 3 && playerTurn == 1 && this->turn == -1){
+    //     ret -= 100000;
+    // }
     return ret;
 }
 
@@ -84,7 +141,7 @@ int CheckersBoard::miniMax(){
 
     // For iterative deepening - call maxValue again incrementing how deep we can go 
     while(true){
-        currentDepth = 3;
+        // currentDepth = 3;
         int state[8][8];
         copyArr(board, state);
         if (turn == 1)
@@ -98,7 +155,7 @@ int CheckersBoard::miniMax(){
         currentDepth++;
     }
 
-    cout << "Time spent searching: " << (clock() - float(startTime)) / CLOCKS_PER_SEC << " seconds" << "\n";
+    cout << "Time spent searching to depth " << currentDepth << ": " << (clock() - float(startTime)) / CLOCKS_PER_SEC << " seconds" << "\n";
     cout << "Evaluation: " << max[0] << "\n";
     currentDepth = 1;
 
@@ -152,7 +209,7 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
         int copy = playerTurn;
         movePiece(i, jump, stateCopy, copy, jumps, moves);
         min_v = minValue(stateCopy, alpha, beta, depth + 1, debug);
-        if (min_v[0] > v[0] ||  min_v[2] == 1){
+        if (min_v[0] > v[0]){
             v[0] = min_v[0];
             v[1] = i;
             v[2] = min_v[2];
@@ -161,7 +218,7 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
         if (v[0] >= beta){
             jumps.clear();
             moves.clear();
-            v[0]--;
+            v[0]++;
             v[1] = i;
             v[2] = min_v[2];
 
@@ -235,7 +292,7 @@ array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, i
         movePiece(i, jump, stateCopy, copy, jumps, moves);
         min_v = maxValue(stateCopy, alpha, beta, depth + 1, debug);
         // if (min_v[0] < v[0] || (min_v[0] == v[0] && rand() % 4 == 0) || min_v[2] == 1){
-        if (min_v[0] < v[0] || min_v[2] == 1){
+        if (min_v[0] < v[0]){
             v[0] = min_v[0];
             v[1] = i;
             v[2] = min_v[2];
@@ -244,7 +301,7 @@ array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, i
         if (v[0] <= alpha){
             jumps.clear();
             moves.clear();
-            v[0]++;
+            v[0]--;
             v[1] = i;
             v[2] = min_v[2];
             if (debug){
