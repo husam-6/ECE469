@@ -34,3 +34,18 @@ If you would just like to start the game at a regular state, select N when promp
 if you want to load in a game and ensure "startGame.txt" is in the same directory as the executable.
 
 ### Sample Run
+
+Compile an executable by running make
+
+<pre>
+./checkers.exe
+
+Would you like to load in a game state? (Y/N): N
+Enter which player should start.
+Enter 1 for player BLUE and 2 for player RED: 2
+Who's playing? Choose Computer vs Computer, Human vs Computer, or Human vs Human (0 / 1 / 2): 0
+
+</pre>
+
+The output of an initial board should print with the options for the given player (in this case red)
+Choosing 0 will play the computer against itself.

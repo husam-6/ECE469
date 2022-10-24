@@ -72,16 +72,6 @@ void copyArr(int (&state)[8][8], int (&stateCopy)[8][8]){
     }
 }
 
-// Helper function for debugging to print the board state
-void printArr(int (&state)[8][8]){
-    for (int i = 0; i < 8; i++){
-        for (int j = 0; j < 8; j++){
-            cout << state[i][j] << "\t";   
-        }
-        cout << "\n";
-    }
-}
-
 
 // Wrapper function for Mini Max Algorithm
 int CheckersBoard::miniMax(){
@@ -123,8 +113,9 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
     vector<vector<dataItem>> jumps;
     vector<dataItem> moves; 
     int jump = getMoves(state, jumps, moves, 1);
-
     array<int, 3> v;
+
+    // Trace output of searched tree 
     if (debug){
         cout << "Board for depth: " << depth << " for player " << playerTurn << "\n";
         cout << "Evaluation: " << eval(state, playerTurn, 0) << '\n';
@@ -195,6 +186,7 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
 
 }
 
+// Similar function to maxvalue...
 array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, int depth, bool debug){
     int stateCopy[8][8];
     int playerTurn = -1;
