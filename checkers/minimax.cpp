@@ -5,13 +5,10 @@ using namespace std;
 // Heuristic evaluation of the board state
 // NEED TO ACCOUNT FOR DEFINITE WINS!!!!!!!
 int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
-
     // RED is always positive (MAX), BLUE is always negative (MIN)
-    // int w1 = 3;
-    // int w2 = 5;
-
-    // int numPawns, numKings; 
-    // numPawns = numKings = 0; 
+    int w1 = 30;
+    int w2 = 50;
+    int tmp, weight;
 
     // Simple heuristic for now - 5 * kings + 3 * pawns
     int counter = 0;
@@ -22,20 +19,29 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
                 counter++;
                 continue;
             }
-            total += state[i][j];
+            tmp = state[i][j];
+            if (abs(tmp) == 1)
+                weight = w1;
+            else if(abs(tmp) == 2)
+                weight = w2; 
+
+            total += weight * tmp;
             counter++;
         }
         counter++;
     }
+
+    int ties = rand() % 10 - 5;
     
     // Trying to account for definite wins / losses
-    int ret = total;
-    // if (cut == 3 && playerTurn == -1){
-    //     ret += 100000;
-    // }
-    // if (cut == 3 && playerTurn == 1){
-    //     ret -= 100000;
-    // }
+    int ret = total + ties;
+
+    if (cut == 3 && playerTurn == -1 && this->turn == 1){
+        ret += 100000;
+    }
+    if (cut == 3 && playerTurn == 1 && this->turn == -1){
+        ret -= 100000;
+    }
     return ret;
 }
 
@@ -82,6 +88,7 @@ int CheckersBoard::miniMax(){
     array<int, 3> max;
     array<int, 3> tmp;
     startTime = clock();
+    bool debug = false;
 
     int turn = this->turn;
 
@@ -91,9 +98,9 @@ int CheckersBoard::miniMax(){
         int state[8][8];
         copyArr(board, state);
         if (turn == 1)
-            tmp = maxValue(state, INT_MIN, INT_MAX, 0, false);
+            tmp = maxValue(state, INT_MIN, INT_MAX, 0, debug);
         else if (turn == -1)
-            tmp = minValue(state, INT_MIN, INT_MAX, 0, false);
+            tmp = minValue(state, INT_MIN, INT_MAX, 0, debug);
         if (!tmp[2])
             max = tmp;
         else
@@ -102,7 +109,7 @@ int CheckersBoard::miniMax(){
     }
 
     cout << "Time spent searching: " << (clock() - float(startTime)) / CLOCKS_PER_SEC << " seconds" << "\n";
-
+    cout << "Evaluation: " << max[0] << "\n";
     currentDepth = 1;
 
     return max[1];
