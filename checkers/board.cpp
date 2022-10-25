@@ -7,7 +7,7 @@ string kingChar = "#";
 int width = 7;
 
 
-CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
+CheckersBoard::CheckersBoard(string loadFile, int playerTurn, int time){
     // NOTE: BLUE ALWAYS GOING DOWN, RED GOING UP (from initial state)
     turn = playerTurn;
     
@@ -15,7 +15,7 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn){
     ifstream stateFile;
     stateFile.open(loadFile);
 
-    timeLimit = 5;
+    timeLimit = time;
 
     int i = 0;
     int counter = 0;

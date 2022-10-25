@@ -78,7 +78,7 @@ class CheckersBoard {
         // 8 x 8 with 24 pieces (12 each player)
         // If a load_file is specified, that game state will be loaded instead
         // Turn variable indicates blue player (1) and red player (-1)
-        CheckersBoard(std::string load_file = "startGame.txt", int playerTurn = 1);
+        CheckersBoard(std::string load_file = "startGame.txt", int playerTurn = 1, int time = 5);
 
         private:
             // Overloaded print option for debugging

@@ -1,62 +1,6 @@
 #include "board.h"
 
-using namespace std; 
-
-//black is more positive
-//red is more negative
-//aabbccddee
-//aa is a count of all pieces: king is worth a total of 3, regular pieces are 2 (black - red)
-//bb is measuring how close a normal piece is to becoming a king, give last row a bonus
-//cc is a piece count difference
-//dd is a measurement near end game, double corners add a bonus for losing player
-//ee is pseudo-random in the case that multiple moves tie for best
-int evaluate(int (&arr)[8][8], int playerTurn){
-	int a1 = 0, a2 = 0, b = 0, c = 0, d = 0;
-	for (int i = 0; i != 8; ++i)
-		for (int j = 0; j != 4; ++j)
-		{
-			if (arr[i][j] == 1)
-			{
-				a1 += 2;
-				if (i == 0)
-					b += 9;
-				else b += i;
-				c += 1;
-			}
-			else if (arr[i][j] == -1)
-			{
-				a2 -=2;
-				if (i == 7)
-					b -= 9;
-				else b -= (7 - i);
-				c -= 1;
-			}
-			else if (arr[i][j] == 2)
-			{
-				a1 += 3;
-				c += 1;
-			}
-			else if (arr[i][j] == -2)
-			{
-				a2 -= 3;
-				c -= 1;
-			}
-		}
-	// if (c > 0 && a2 >= -8)
-	// 	d -= cornerDiagonal('r', 'b');
-	// else if (c < 0 && a1 <= 8)
-	// 	d += cornerDiagonal('b', 'r');
-	a1 *= 100000000;
-	a2 *= 100000000;
-	b *= 1000000;
-	c *= 10000;
-	d *= 100;
-	int e = rand() % 100;
-	if (playerTurn == -1)
-		e = -e;
-	return a1 + a2 + b + c + d + e;
-}
-
+using namespace std;
 
 // Heuristic evaluation of the board state
 // NEED TO ACCOUNT FOR DEFINITE WINS!!!!!!!
@@ -66,6 +10,7 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     int w2 = 50;
     int tmp;
     int weight = 0;
+    int pieceCounter = 0; 
 
     // Simple heuristic for now - 5 * kings + 3 * pawns
     int counter = 0;
@@ -77,10 +22,16 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
                 continue;
             }
             tmp = state[i][j];
-            if (abs(tmp) == 1)
+
+            // Figure out weights for each piece (ie pawn vs king)
+            if (abs(tmp) == 1){
                 weight = w1;
-            else if(abs(tmp) == 2)
-                weight = w2; 
+                pieceCounter++;
+            }
+            else if(abs(tmp) == 2){
+                weight = w2;
+                pieceCounter++;
+            }
 
             total += weight * tmp;
             counter++;
