@@ -62,8 +62,8 @@ int evaluate(int (&arr)[8][8], int playerTurn){
 // NEED TO ACCOUNT FOR DEFINITE WINS!!!!!!!
 int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     // RED is always positive (MAX), BLUE is always negative (MIN)
-    int w1 = 300;
-    int w2 = 500;
+    int w1 = 30;
+    int w2 = 50;
     int tmp;
     int weight = 0;
 
@@ -88,17 +88,17 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
         counter++;
     }
 
-    int ties = rand() % 4 - 3;
+    int ties = rand() % 31 - 15;
     
     // Trying to account for definite wins / losses
     int ret = total + ties;
 
-    // if (cut == 3 && playerTurn == -1 && this->turn == 1){
-    //     ret += 100000;
-    // }
-    // if (cut == 3 && playerTurn == 1 && this->turn == -1){
-    //     ret -= 100000;
-    // }
+    if (cut == 3 && playerTurn == -1 && this->turn == 1){
+        ret += (100000 - 10 * currentDepth);
+    }
+    if (cut == 3 && playerTurn == 1 && this->turn == -1){
+        ret -= (100000 + 10 * currentDepth);
+    }
     return ret;
 }
 
@@ -218,7 +218,7 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
         if (v[0] >= beta){
             jumps.clear();
             moves.clear();
-            v[0]++;
+            v[0]+=15;
             v[1] = i;
             v[2] = min_v[2];
 
@@ -301,7 +301,7 @@ array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, i
         if (v[0] <= alpha){
             jumps.clear();
             moves.clear();
-            v[0]--;
+            v[0]-=15;
             v[1] = i;
             v[2] = min_v[2];
             if (debug){
