@@ -10,6 +10,7 @@ Game::Game(){
     string player;
     string gameState;
     string timeLim;
+    int lim = 5;
     
     // Get file name if loading in a state
     cout << "Would you like to load in a game state? (Y/N): ";
@@ -24,8 +25,17 @@ Game::Game(){
         fileName = "startGame.txt";
         cout << "Enter which player should start. \nEnter 1 for player BLUE and 2 for player RED: ";
         cin >> player;
-        cout << "Enter a time limit (in seconds): ";
-        cin >> timeLim;
+        while(true){
+            try{
+                cout << "Enter a time limit (in seconds): ";
+                cin >> timeLim;
+                lim = stoi(timeLim);
+                break;
+            }
+            catch(...){
+                cout << "Enter a valid time..." << "\n";
+            }
+        }
     }
 
     // Convert color to match convention in CheckersBoard class
@@ -42,7 +52,7 @@ Game::Game(){
     numHumans = numHumansInput;
     playerStart = color;
 
-    board = CheckersBoard(fileName, color, stoi(timeLim));
+    board = CheckersBoard(fileName, color, lim);
     
     // In case a board state was loaded in...
     playerStart = board.getTurn();
