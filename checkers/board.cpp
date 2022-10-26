@@ -14,6 +14,11 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn, int time){
     string line; 
     ifstream stateFile;
     stateFile.open(loadFile);
+    if (!stateFile){
+        cerr<< "Error opening file \n";
+        return; 
+    }
+
 
     timeLimit = time;
 
@@ -22,7 +27,8 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn, int time){
     // Loop through each line of the state file
     while(getline(stateFile, line))
     {
-        
+        line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
+
         // Store turn variable
         if (i == 8){
             int tmpNum = stoi(line);
@@ -41,7 +47,7 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn, int time){
 
         // Set the pieces on the board
         for(int j = 0; j < 8; j++){
-            char piece = line[j];
+            char piece = line[j / 2];
             if (counter % 2 == 0){
                 board[i][j] = 0;
                 counter++;
