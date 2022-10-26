@@ -6,15 +6,16 @@ using namespace std;
 // NEED TO ACCOUNT FOR DEFINITE WINS!!!!!!!
 int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     // RED is always positive (MAX), BLUE is always negative (MIN)
-    int w1 = 30;
-    int w2 = 50;
-    int tmp;
-    int weight = 0;
+    int pawn = 300;
+    int king = 500;
+    int trades = 10;
     int pieceCounter = 0; 
+    int kpTotal = 0;
+    int tmp;
 
     // Simple heuristic for now - 5 * kings + 3 * pawns
+    int weight = 0;
     int counter = 0;
-    int total = 0;
     for (int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
             if (counter % 2 == 0){
@@ -25,25 +26,37 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
 
             // Figure out weights for each piece (ie pawn vs king)
             if (abs(tmp) == 1){
-                weight = w1;
+                weight = pawn;
                 pieceCounter++;
             }
             else if(abs(tmp) == 2){
-                weight = w2;
+                weight = king;
                 pieceCounter++;
             }
 
-            total += weight * tmp;
+            kpTotal += weight * tmp;
             counter++;
         }
         counter++;
     }
 
-    int ties = rand() % 31 - 15;
+    int ties = rand() % 11 - 5;
+    int ret = kpTotal + ties;
     
-    // Trying to account for definite wins / losses
-    int ret = total + ties;
+    
+    // Emphasize trades... Lower total number of pieces is better! 
+    int reward = 24 - pieceCounter;
 
+    // Check whose currently winning
+    // If MAX / BLUE is winning, higher eval for lower pieces
+    if (kpTotal > 0)
+        ret += trades * reward;
+    // If MIN / RED is winning, lower eval for lower pieces
+    else if (kpTotal < 0)
+        ret -= trades * reward; 
+    
+
+    // Trying to account for definite wins / losses
     if (cut == 3 && playerTurn == -1 && this->turn == 1){
         ret += (100000 - 10 * currentDepth);
     }
@@ -62,7 +75,7 @@ int CheckersBoard::isCutOff(int depth, vector<vector<dataItem>> &jumps, vector<d
     if (depth == currentDepth){
         return 1;
     }
-    else if ((clock() - float(startTime)) / CLOCKS_PER_SEC >= (timeLimit - 0.2)){
+    else if ((clock() - float(startTime)) / CLOCKS_PER_SEC >= (timeLimit - 0.1)){
         return 2;
     }
     else if ((jumps.size() + moves.size()) == 0){

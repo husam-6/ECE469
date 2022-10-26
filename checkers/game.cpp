@@ -79,7 +79,8 @@ int Game::computerMove(int * type){
 
 
 int Game::playGame(){
-    int type, option, move;
+    int type, move;
+    string option;
 
     // For Human vs Human
     // Initialize loop
@@ -104,8 +105,16 @@ int Game::playGame(){
         // Otherwise, human picks a move (numHumans == 2)
         cout << "Pick a move: ";
         cin >> option;
+
+        int choice;
+        try{
+            choice = stoi(option);
+        } catch(...){
+            continue;
+        }
         
-        move = board.movePiece(option, type);
+        
+        move = board.movePiece(choice, type);
         if (move == -1)
             continue;
         board.printBoard();
