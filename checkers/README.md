@@ -26,9 +26,9 @@ text file as follows:
 </pre>
 
 The above example includes 8 rows of 8 characters - either a space, 0, or integer
-between 1-4. 1 & 2 represent BLUE pieces and kings (respectively), 3 & 4 represent
-RED pieces and kings. The last two lines indicate which players turn (line 8) and
-the time limit specified for the computer. By convention, RED will always attack going UP,
+between 1-4. 1 & 2 represent BLUE pawns and RED pawns (respectively), 3 & 4 represent
+BLUE kings and RED kings (respectively). The last two lines indicate which players turn (line 8)
+and the time limit specified for the computer. By convention, RED will always attack going UP,
 BLUE going DOWN. Spaces will not affect the program, but is included here for readability.
 
 If you would just like to start the game at a regular state, select N when prompted

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <queue>
 #include <array>
+#include <climits>
 
 // For colors
 #define RESET   "\033[0m"

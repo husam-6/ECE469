@@ -53,14 +53,22 @@ CheckersBoard::CheckersBoard(string loadFile, int playerTurn, int time){
                 counter++;
                 continue;
             }
-            if (piece == '3'){
-                board[i][j] = -1;
-            }
-            else if(piece == '4'){
-                board[i][j] = -2;
-            }
-            else{
-                board[i][j] = int(piece - '0');
+            switch(piece){
+                case '0':
+                    board[i][j] = 0;
+                    break;
+                case '1':
+                    board[i][j] = 1;
+                    break;
+                case '2':
+                    board[i][j] = -1;
+                    break;
+                case '3':
+                    board[i][j] = 2;
+                    break;
+                case '4':
+                    board[i][j] = -2;
+                    break;
             }
             counter++;
         }

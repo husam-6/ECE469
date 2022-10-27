@@ -2,20 +2,33 @@
 
 using namespace std;
 
+int sign(int num){
+    if (num > 0) return 1;
+    if (num < 0) return -1;
+    return 0;
+}
+
 // Heuristic evaluation of the board state
 // NEED TO ACCOUNT FOR DEFINITE WINS!!!!!!!
 int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     // RED is always positive (MAX), BLUE is always negative (MIN)
-    int pawn = 300;
-    int king = 500;
-    int trades = 10;
-    int pieceCounter = 0; 
-    int kpTotal = 0;
-    int tmp;
+    int pawn = 30000;
+    int king = 50000;
+    int promotion = 1000;
+    int trades = 100;
+    int numRed = 0;
+    int numBlue = 0;
+
+    // Add bonus to protect your back rank
 
     // Simple heuristic for now - 5 * kings + 3 * pawns
+    int tmp;
     int weight = 0;
     int counter = 0;
+    int pieceCounter = 0; 
+    int kpTotal = 0;
+    int aveDistRed = 0;
+    int aveDistBlue = 0;
     for (int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
             if (counter % 2 == 0){
@@ -28,13 +41,22 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
             if (abs(tmp) == 1){
                 weight = pawn;
                 pieceCounter++;
+                if (tmp < 0){
+                    aveDistRed += i;
+                    numRed++;
+                }
+                else{
+                    aveDistBlue += (8 - i);
+                    numBlue++;
+                }
+                kpTotal += weight * tmp;
+                
             }
             else if(abs(tmp) == 2){
                 weight = king;
                 pieceCounter++;
+                kpTotal += weight * sign(tmp);
             }
-
-            kpTotal += weight * tmp;
             counter++;
         }
         counter++;
@@ -44,24 +66,29 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     int ret = kpTotal + ties;
     
     
-    // Emphasize trades... Lower total number of pieces is better! 
+    // Emphasize trades... Lower total number of pieces is better (if winning)! 
     int reward = 24 - pieceCounter;
 
     // Check whose currently winning
     // If MAX / BLUE is winning, higher eval for lower pieces
     if (kpTotal > 0)
         ret += trades * reward;
-    // If MIN / RED is winning, lower eval for lower pieces
+
+    // // If MIN / RED is winning, lower eval for lower pieces
     else if (kpTotal < 0)
         ret -= trades * reward; 
-    
 
-    // Trying to account for definite wins / losses
+    // Add value for how far piece is from promotion... (for Red, index is distance to back rank, 
+    // for Blue, 8 - index gives us this)
+    ret -= promotion * aveDistBlue;
+    ret += promotion * aveDistRed;  
+
+    // Trying to account for definite wins / losses (this is still flawed)
     if (cut == 3 && playerTurn == -1 && this->turn == 1){
-        ret += (100000 - 10 * currentDepth);
+        ret += (1000000 - 10 * currentDepth);
     }
     if (cut == 3 && playerTurn == 1 && this->turn == -1){
-        ret -= (100000 + 10 * currentDepth);
+        ret -= (1000000 + 10 * currentDepth);
     }
     return ret;
 }
@@ -105,7 +132,6 @@ int CheckersBoard::miniMax(){
 
     // For iterative deepening - call maxValue again incrementing how deep we can go 
     while(true){
-        // currentDepth = 3;
         int state[8][8];
         copyArr(board, state);
         if (turn == 1)
@@ -117,6 +143,8 @@ int CheckersBoard::miniMax(){
         else
             break;
         currentDepth++;
+        if ((clock() - float(startTime)) / CLOCKS_PER_SEC >= (timeLimit - 0.1) / 1.5)
+            break;
     }
 
     cout << "Time spent searching to depth " << currentDepth << ": " << (clock() - float(startTime)) / CLOCKS_PER_SEC << " seconds" << "\n";
@@ -182,7 +210,7 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
         if (v[0] >= beta){
             jumps.clear();
             moves.clear();
-            v[0]+=15;
+            v[0]+=10;
             v[1] = i;
             v[2] = min_v[2];
 
@@ -265,7 +293,7 @@ array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, i
         if (v[0] <= alpha){
             jumps.clear();
             moves.clear();
-            v[0]-=15;
+            v[0]-=10;
             v[1] = i;
             v[2] = min_v[2];
             if (debug){
