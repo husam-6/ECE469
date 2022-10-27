@@ -2,22 +2,40 @@
 
 using namespace std;
 
+// Helper function for evaluation function
 int sign(int num){
     if (num > 0) return 1;
     if (num < 0) return -1;
     return 0;
 }
 
+// Find the distance between two coordinates
+float distance(int x1, int y1, int x2, int y2){
+    int x_dist, y_dist;
+
+    x_dist = (x1 - x2);
+    x_dist *= x_dist;
+    y_dist = (y1 - y2);
+    y_dist *= y_dist;
+    if (x_dist + y_dist > 0) 
+        return sqrt(x_dist + y_dist);
+    else
+        return 0;
+}
+
 // Heuristic evaluation of the board state
 // NEED TO ACCOUNT FOR DEFINITE WINS!!!!!!!
 int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     // RED is always positive (MAX), BLUE is always negative (MIN)
-    int pawn = 30000;
-    int king = 50000;
-    int promotion = 1000;
+    int pawn = 300000;
+    int king = 500000;
+    int promotion = 10000;
+    int goalie = 1000;
     int trades = 100;
     int numRed = 0;
     int numBlue = 0;
+    float maxDistRed = 0;
+    float maxDistBlue = 0; 
 
     // Add bonus to protect your back rank
 
@@ -29,6 +47,8 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     int kpTotal = 0;
     int aveDistRed = 0;
     int aveDistBlue = 0;
+    int numRedGoalies = 0;
+    int numBlueGoalies = 0; 
     for (int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
             if (counter % 2 == 0){
@@ -44,10 +64,20 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
                 if (tmp < 0){
                     aveDistRed += i;
                     numRed++;
+                    if (i == 7){
+                        numRedGoalies+=3;
+                        if (j == 2 || j == 4)
+                            numRedGoalies+=5; 
+                    }
                 }
-                else{
+                else if (tmp > 0){
                     aveDistBlue += (8 - i);
                     numBlue++;
+                    if (i == 0){
+                        numBlueGoalies+=3;
+                        if (j == 2 || j == 4)
+                            numBlueGoalies+=5; 
+                    }
                 }
                 kpTotal += weight * tmp;
                 
@@ -65,6 +95,9 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     int ties = rand() % 11 - 5;
     int ret = kpTotal + ties;
     
+    // Bonus for having pieces on the back rank
+    ret += goalie * numBlueGoalies;
+    ret -= goalie * numRedGoalies; 
     
     // Emphasize trades... Lower total number of pieces is better (if winning)! 
     int reward = 24 - pieceCounter;
