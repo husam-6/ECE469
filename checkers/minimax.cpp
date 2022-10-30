@@ -10,17 +10,49 @@ int sign(int num){
 }
 
 // Find the distance between two coordinates
-float distance(int x1, int y1, int x2, int y2){
-    int x_dist, y_dist;
+float dist(int king_i, int king_j, int i, int j){
+  int x_dist, y_dist;
+  
+  x_dist = (king_i - i);
+  x_dist *= x_dist;
+  y_dist = (king_j - j);
+  y_dist *= y_dist;
+  if (x_dist + y_dist > 0) 
+    return sqrt(x_dist + y_dist);
+  else
+    return 0;
+}
 
-    x_dist = (x1 - x2);
-    x_dist *= x_dist;
-    y_dist = (y1 - y2);
-    y_dist *= y_dist;
-    if (x_dist + y_dist > 0) 
-        return sqrt(x_dist + y_dist);
-    else
-        return 0;
+
+// Helper function to get total distance for a given piece 
+int totalDist(int (&state)[8][8], int playerTurn, int king_i, int king_j){
+    float distance = 0;
+    for (int i = 0; i < 8; i++){
+        for (int j = 0; j < 8; j++){
+            if (sign(state[i][j]) == sign(-1 * playerTurn))
+                distance += dist(king_i, king_j, i, j);
+            if (state[i][j] == 2 * playerTurn)
+                distance -= dist(king_i, king_j, i, j);
+
+        }
+    }
+
+    return int(distance);
+}
+
+
+// Function to return penalty equal to total distance between kings and opponent pieces
+int endGame(int (&state)[8][8], int playerTurn){
+    int distance = 0; 
+    for(int i = 0; i < 8; i++){
+        for (int j = 0; j < 8; j++){
+            if (state[i][j] == 2 * playerTurn){
+                distance += totalDist(state, playerTurn, i, j);
+            }
+        }
+    }
+
+    return distance;   
 }
 
 // Heuristic evaluation of the board state
@@ -32,6 +64,7 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     int promotion = 10000;
     int goalie = 1000;
     int trades = 100;
+    int distance_factor = 10;
     int numRed = 0;
     int numBlue = 0;
     float maxDistRed = 0;
@@ -64,19 +97,19 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
                 if (tmp < 0){
                     aveDistRed += i;
                     numRed++;
-                    if (i == 7){
-                        numRedGoalies+=3;
+                    if (i == 7 && tmp == -1){
+                        numRedGoalies+=1;
                         if (j == 2 || j == 4)
-                            numRedGoalies+=5; 
+                            numRedGoalies+=1; 
                     }
                 }
                 else if (tmp > 0){
                     aveDistBlue += (8 - i);
                     numBlue++;
-                    if (i == 0){
-                        numBlueGoalies+=3;
+                    if (i == 0 && tmp == 1){
+                        numBlueGoalies+=1;
                         if (j == 2 || j == 4)
-                            numBlueGoalies+=5; 
+                            numBlueGoalies+=1; 
                     }
                 }
                 kpTotal += weight * tmp;
@@ -92,9 +125,17 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
         counter++;
     }
 
+    // Random digit to break ties
     int ties = rand() % 11 - 5;
     int ret = kpTotal + ties;
-    
+
+    // End Games
+    if (kpTotal > 0 && pieceCounter <= 6)
+        ret -= distance_factor * endGame(state, playerTurn);
+    if (kpTotal < 0 && pieceCounter <= 6)
+        ret += distance_factor * endGame(state, playerTurn);
+
+
     // Bonus for having pieces on the back rank
     ret += goalie * numBlueGoalies;
     ret -= goalie * numRedGoalies; 
@@ -107,22 +148,22 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     if (kpTotal > 0)
         ret += trades * reward;
 
-    // // If MIN / RED is winning, lower eval for lower pieces
+    // If MIN / RED is winning, lower eval for lower pieces
     else if (kpTotal < 0)
         ret -= trades * reward; 
 
     // Add value for how far piece is from promotion... (for Red, index is distance to back rank, 
     // for Blue, 8 - index gives us this)
-    ret -= promotion * aveDistBlue;
-    ret += promotion * aveDistRed;  
+    // ret -= promotion * aveDistBlue;
+    // ret += promotion * aveDistRed;  
 
     // Trying to account for definite wins / losses (this is still flawed)
-    if (cut == 3 && playerTurn == -1 && this->turn == 1){
+    if (cut == 3 && playerTurn == -1 && this->turn == 1)
         ret += (1000000 - 10 * currentDepth);
-    }
-    if (cut == 3 && playerTurn == 1 && this->turn == -1){
+    if (cut == 3 && playerTurn == 1 && this->turn == -1)
         ret -= (1000000 + 10 * currentDepth);
-    }
+    
+
     return ret;
 }
 
