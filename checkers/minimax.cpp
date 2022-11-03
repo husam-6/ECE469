@@ -210,7 +210,14 @@ int CheckersBoard::miniMax(){
 
     startTime = clock();
     bool debug = false;
-    // bool debug = true;
+
+    int pieces = 0;
+    for (int i = 0; i < 8; i++){
+        for (int j = 0; j < 8; j++){
+            if (board[i][j] != 0)
+                pieces++;
+        }
+    }
 
     int turn = this->turn;
 
@@ -236,11 +243,12 @@ int CheckersBoard::miniMax(){
             break;
         
         // Keep track of all the outputs from each level search
-        bestOptions.push_back(max[1]);
+        if (pieces <= 7)
+            bestOptions.push_back(max[1]);
     }
 
     // If there isnt a definite win, use the mode of all the searched result moves
-    if (max[2] != 3){
+    if (max[2] != 3 && (pieces <= 7)){
         map<int, int> m;
         for (int i = 0; i < bestOptions.size(); i++){
             if (m.find(bestOptions[i]) == m.end()){
