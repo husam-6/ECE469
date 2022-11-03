@@ -211,13 +211,21 @@ int CheckersBoard::miniMax(){
     startTime = clock();
     bool debug = false;
 
+
+    // Get stats on current board (for end game handling...)
     int pieces = 0;
     int winning = 0;
+    int redKings = 0;
+    int blueKings = 0;  
     for (int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
             if (board[i][j] != 0){
                 winning += board[i][j];
                 pieces++;
+                if (board[i][j] == -2)
+                    redKings++;
+                if (board[i][j] == 2)
+                    blueKings++;
             }
         }
     }
@@ -246,12 +254,13 @@ int CheckersBoard::miniMax(){
             break;
         
         // Keep track of all the outputs from each level search
-        if (pieces <= 7 && (sign(winning) == sign(this->turn)))
+        if (pieces <= 7 && (sign(winning) == sign(this->turn)) && (redKings + blueKings == 3))
             bestOptions.push_back(max[1]);
     }
 
     // If there isnt a definite win, use the mode of all the searched result moves
-    if (max[2] != 3 && (pieces <= 7) && (sign(winning) == sign(this->turn))){
+    // For 2K vs 1K scenario 
+    if (max[2] != 3 && (pieces <= 7) && (sign(winning) == sign(this->turn)) && (redKings + blueKings == 3)){
         map<int, int> m;
         for (int i = 0; i < bestOptions.size(); i++){
             if (m.find(bestOptions[i]) == m.end()){
