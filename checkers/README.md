@@ -34,6 +34,11 @@ BLUE going DOWN. Spaces will not affect the program, but is included here for re
 If you would just like to start the game at a regular state, select N when prompted
 if you want to load in a game and ensure "startGame.txt" is in the same directory as the executable.
 
+This program allows for 3 modes as a user - Computer vs Computer, Computer vs Human, and Human vs Human.
+By convention, I require the computer to always play as player 1 if specified. In other words, for the Computer
+vs Human case, the computer is always player 1 (Blue) and the human is always player 2 (RED). Player 1 always
+attacks going 'down' the board, player 2 going 'up'. 
+
 ### Sample Run
 
 Compile an executable by running make. Here is a sample run with the output provided

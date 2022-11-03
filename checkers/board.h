@@ -13,6 +13,7 @@
 #include <queue>
 #include <array>
 #include <climits>
+#include<unistd.h>
 
 // For colors
 #define RESET   "\033[0m"
