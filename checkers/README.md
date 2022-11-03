@@ -57,3 +57,7 @@ Who's playing? Choose Computer vs Computer, Human vs Computer, or Human vs Human
 The output of an initial board should print with the options for the given player (in this case red)
 Choosing 0 will play the computer against itself. Resize your terminal window to fit the board and options in 
 a single screen and upon each move the board position should remain the same. 
+
+Below is a screenshot sample run:
+
+![alt text](https://github.com/husam-6/ECE469/blob/main/checkers/sampleRun.png?raw=true)
