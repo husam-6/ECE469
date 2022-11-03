@@ -212,10 +212,13 @@ int CheckersBoard::miniMax(){
     bool debug = false;
 
     int pieces = 0;
+    int winning = 0;
     for (int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
-            if (board[i][j] != 0)
+            if (board[i][j] != 0){
+                winning += board[i][j];
                 pieces++;
+            }
         }
     }
 
@@ -243,12 +246,12 @@ int CheckersBoard::miniMax(){
             break;
         
         // Keep track of all the outputs from each level search
-        if (pieces <= 7)
+        if (pieces <= 7 && (sign(winning) == sign(this->turn)))
             bestOptions.push_back(max[1]);
     }
 
     // If there isnt a definite win, use the mode of all the searched result moves
-    if (max[2] != 3 && (pieces <= 7)){
+    if (max[2] != 3 && (pieces <= 7) && (sign(winning) == sign(this->turn))){
         map<int, int> m;
         for (int i = 0; i < bestOptions.size(); i++){
             if (m.find(bestOptions[i]) == m.end()){
@@ -274,7 +277,7 @@ int CheckersBoard::miniMax(){
         max[1] = entryWithMaxValue.first;
     }
 
-    cout << "Time spent searching to depth " << currentDepth << ": " << (clock() - float(startTime)) / CLOCKS_PER_SEC << " seconds" << "\n";
+    cout << "Time spent searching to depth " << currentDepth << ": " << (clock() - float(startTime)) / CLOCKS_PER_SEC << " seconds. ";
     cout << "Evaluation: " << max[0] << "\n";
     currentDepth = 1;
 
