@@ -31,8 +31,8 @@ int totalDist(int (&state)[8][8], int playerTurn, int king_i, int king_j){
         for (int j = 0; j < 8; j++){
             if (sign(state[i][j]) == sign(-1 * playerTurn))
                 distance += dist(king_i, king_j, i, j);
-            if (state[i][j] == 2 * playerTurn)
-                distance -= dist(king_i, king_j, i, j);
+            // if (state[i][j] == 2 * playerTurn)
+            //     distance -= dist(king_i, king_j, i, j);
 
         }
     }
@@ -40,14 +40,13 @@ int totalDist(int (&state)[8][8], int playerTurn, int king_i, int king_j){
     return int(distance);
 }
 
-
 // Function to return penalty equal to total distance between kings and opponent pieces
 int endGame(int (&state)[8][8], int playerTurn){
     int distance = 0; 
     for(int i = 0; i < 8; i++){
         for (int j = 0; j < 8; j++){
             if (state[i][j] == 2 * playerTurn){
-                distance += totalDist(state, playerTurn, i, j);
+                distance += totalDist(state, playerTurn, i, j); 
             }
         }
     }
@@ -56,23 +55,23 @@ int endGame(int (&state)[8][8], int playerTurn){
 }
 
 // Heuristic evaluation of the board state
-// NEED TO ACCOUNT FOR DEFINITE WINS!!!!!!!
-int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
+// AGGRETION FACTOR - most divided by least and multiply by constant 
+int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut, int depth){
     // RED is always positive (MAX), BLUE is always negative (MIN)
     int pawn = 300000;
     int king = 500000;
     int promotion = 10000;
     int goalie = 1000;
     int trades = 100;
-    int distance_factor = 10;
+    int distance_factor = 100;
     int numRed = 0;
     int numBlue = 0;
     float maxDistRed = 0;
-    float maxDistBlue = 0; 
+    float maxDistBlue = 0;
+    int blueCorner = 0;
+    int redCorner = 0;  
 
-    // Add bonus to protect your back rank
-
-    // Simple heuristic for now - 5 * kings + 3 * pawns
+    // Variables to keep track of in loop through all pieces
     int tmp;
     int weight = 0;
     int counter = 0;
@@ -102,15 +101,19 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
                         if (j == 2 || j == 4)
                             numRedGoalies+=1; 
                     }
+                    if (tmp == -2 && ((i == 7 && j == 6) || (i == 6 && j == 7) || (i == 0 && j == 1) || (i == 1 && j == 0)))
+                        redCorner+=5;
                 }
                 else if (tmp > 0){
                     aveDistBlue += (8 - i);
                     numBlue++;
                     if (i == 0 && tmp == 1){
                         numBlueGoalies+=1;
-                        if (j == 2 || j == 4)
+                        if (j == 3 || j == 5)
                             numBlueGoalies+=1; 
                     }
+                    if (tmp == 2 && ((i == 7 && j == 6) || (i == 6 && j == 7) || (i == 0 && j == 1) || (i == 1 && j == 0)))
+                        blueCorner+=5;
                 }
                 kpTotal += weight * tmp;
                 
@@ -130,10 +133,17 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     int ret = kpTotal + ties;
 
     // End Games
-    if (kpTotal > 0 && pieceCounter <= 6)
+    if (kpTotal > 0 && pieceCounter <= 6){
         ret -= distance_factor * endGame(state, playerTurn);
-    if (kpTotal < 0 && pieceCounter <= 6)
+        ret -= distance_factor * redCorner;
+        ret += distance_factor * blueCorner;
+
+    }
+    if (kpTotal < 0 && pieceCounter <= 6){
         ret += distance_factor * endGame(state, playerTurn);
+        ret -= distance_factor * redCorner;
+        ret += distance_factor * blueCorner;
+    }
 
 
     // Bonus for having pieces on the back rank
@@ -157,11 +167,12 @@ int CheckersBoard::eval(int (&state)[8][8], int playerTurn, int cut){
     // ret -= promotion * aveDistBlue;
     // ret += promotion * aveDistRed;  
 
-    // Trying to account for definite wins / losses (this is still flawed)
-    if (cut == 3 && playerTurn == -1 && this->turn == 1)
-        ret += (1000000 - 10 * currentDepth);
-    if (cut == 3 && playerTurn == 1 && this->turn == -1)
-        ret -= (1000000 + 10 * currentDepth);
+    // Trying to account for definite wins / losses
+    if (cut == 3 && playerTurn == -1)
+        ret += (10000000 - 100 * depth);
+    if (cut == 3 && playerTurn == 1)
+        ret -= (10000000 + 100 * depth);
+    
     
 
     return ret;
@@ -241,7 +252,7 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
     // Trace output of searched tree 
     if (debug){
         cout << "Board for depth: " << depth << " for player " << playerTurn << "\n";
-        cout << "Evaluation: " << eval(state, playerTurn, 0) << '\n';
+        cout << "Evaluation: " << eval(state, playerTurn, 0, depth) << '\n';
         printBoard(state);
         printOptions(jumps, moves, turn);
     }
@@ -249,14 +260,14 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
 
     if (int cut = isCutOff(depth, jumps, moves)){
         // Pass back up the evaluation and its corresponding 'option' (ie which move is associated)
-        v[0] = eval(state, playerTurn, cut);
+        v[0] = eval(state, playerTurn, cut, depth);
         // v[0] = evaluate(state, playerTurn);
         v[1] = 0;
         v[2] = 0;
         if (cut == 2)
             v[2] = 1;
         if (debug){
-            cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+            cout << "EVAL: " << eval(state, playerTurn, 0, depth) << " for player " << playerTurn << "\n";
             cout << "DEPTH: " << depth << ", depth limit " << "\n";
         }
         return v;
@@ -290,7 +301,7 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
 
             if (debug){
                 cout << "v = " << v[0] << " Beta = " << beta << "\n";
-                cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+                cout << "EVAL: " << eval(state, playerTurn, 0, depth) << " for player " << playerTurn << "\n";
                 cout << "DEPTH: " << depth << ", PRUNE " << "\n";
                 printBoard(stateCopy);
             }
@@ -301,7 +312,7 @@ array<int, 3> CheckersBoard::maxValue(int (&state)[8][8], int alpha, int beta, i
     moves.clear();
 
     if (debug){
-        cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+        cout << "EVAL: " << eval(state, playerTurn, 0, depth) << " for player " << playerTurn << "\n";
         cout << "DEPTH: " << depth << "\n";
         printBoard(stateCopy);
     }
@@ -321,21 +332,21 @@ array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, i
 
     if (debug){
         cout << "Board for depth: " << depth << " for player " << playerTurn << "\n";
-        cout << "Evaluation: " << eval(state, playerTurn, 0) << '\n';
+        cout << "Evaluation: " << eval(state, playerTurn, 0, depth) << '\n';
         printBoard(state);
         printOptions(jumps, moves, turn);
     }
 
     if (int cut = isCutOff(depth, jumps, moves)){
         // Pass back up the evaluation and its corresponding 'option' (ie which move is associated)
-        v[0] = eval(state, playerTurn, cut);
+        v[0] = eval(state, playerTurn, cut, depth);
         // v[0] = evaluate(state, playerTurn);
         v[1] = 0;
         v[2] = 0;
         if (cut == 2)
             v[2] = 1;
         if (debug){
-            cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+            cout << "EVAL: " << eval(state, playerTurn, 0, depth) << " for player " << playerTurn << "\n";
             cout << "DEPTH: " << depth << ", Depth limit" << "\n";
             printBoard(state);
         }
@@ -349,7 +360,6 @@ array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, i
     if(jumps.size() > 0){
         size = jumps.size();
     }
-    // cout << "GET HERE" << '\n' << "SIZE = " << size << '\n';
     for (int i = 0; i < size; i++){
         // Make a copy of the board state
         copyArr(state, stateCopy);
@@ -372,7 +382,7 @@ array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, i
             v[2] = min_v[2];
             if (debug){
                 cout << "v = " << v[0] << " alpha = " << alpha << "\n";
-                cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+                cout << "EVAL: " << eval(state, playerTurn, 0, depth) << " for player " << playerTurn << "\n";
                 cout << "DEPTH: " << depth << ", PRUNE" << "\n";
                 printBoard(stateCopy);
             }
@@ -381,7 +391,7 @@ array<int, 3> CheckersBoard::minValue(int (&state)[8][8], int alpha, int beta, i
     }
     
     if (debug){
-        cout << "EVAL: " << eval(state, playerTurn, 0) << " for player " << playerTurn << "\n";
+        cout << "EVAL: " << eval(state, playerTurn, 0, depth) << " for player " << playerTurn << "\n";
         cout << "DEPTH: " << depth << "\n";
         printBoard(stateCopy);
     }

@@ -136,7 +136,7 @@ class CheckersBoard {
             int isCutOff(int depth, std::vector<std::vector<dataItem>> &jumps, std::vector<dataItem> &moves);
 
             // Heuristic to evaluate move 
-            int eval(int (&state)[8][8], int turn, int cut);
+            int eval(int (&state)[8][8], int turn, int cut, int depth);
 
             int currentDepth = 1;
 

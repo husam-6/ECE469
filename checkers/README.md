@@ -36,17 +36,24 @@ if you want to load in a game and ensure "startGame.txt" is in the same director
 
 ### Sample Run
 
-Compile an executable by running make
+Compile an executable by running make. Here is a sample run with the output provided
 
 <pre>
-./checkers.exe
-
+➜  checkers git:(main) make
+g++ -c -std=c++17 board.cpp
+g++ -c -std=c++17 main.cpp
+g++ -c -std=c++17 game.cpp
+g++ -c -std=c++17 minimax.cpp
+g++ -o checkers.exe main.o board.o game.o minimax.o
+➜  checkers git:(main) ./checkers.exe
 Would you like to load in a game state? (Y/N): N
 Enter which player should start.
 Enter 1 for player BLUE and 2 for player RED: 2
+Enter a time limit (in seconds): 5
 Who's playing? Choose Computer vs Computer, Human vs Computer, or Human vs Human (0 / 1 / 2): 0
 
 </pre>
 
 The output of an initial board should print with the options for the given player (in this case red)
-Choosing 0 will play the computer against itself.
+Choosing 0 will play the computer against itself. Resize your terminal window to fit the board and options in 
+a single screen and upon each move the board position should remain the same. 

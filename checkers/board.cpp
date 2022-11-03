@@ -513,6 +513,9 @@ void CheckersBoard::printBoard(){
 
 // Print the board state
 void CheckersBoard::printBoard(int (&board)[8][8]){
+    cout << "Player 1 is " << BLUE_BACK <<  "  " << RESET;
+    cout << ", Player 2 is " << RED_BACK << "  " << RESET << '\n';
+    
     int counter = 0;
     string padding = "  ";
 
