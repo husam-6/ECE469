@@ -167,7 +167,7 @@ int CheckersBoard::printOptions(vector<vector<dataItem>> &jumps, vector<dataItem
             cout << "\n";
             i++;
         }
-        while (i <= 12){
+        while (i <= 11){
             cout << "\n";
             i++;
         }
@@ -198,7 +198,7 @@ int midPoint(int x1, int x2){
 }
 
 int CheckersBoard::movePiece(int option, int jump){
-    int val = movePiece(option, jump, board, turn, jumps, moves);
+    int val = movePiece(option, jump, board, turn, jumps, moves, 1);
     
     if (val != -1){
         jumps.clear();
@@ -210,7 +210,7 @@ int CheckersBoard::movePiece(int option, int jump){
 
 
 int CheckersBoard::movePiece(int option, int jump, int (&state)[8][8], int &turn,
-                             vector<vector<dataItem>> &jumps, vector<dataItem> &moves){
+                             vector<vector<dataItem>> &jumps, vector<dataItem> &moves, int trueMove){
     // Check if option given is out of bounds..
     if (jump){
         if (option >= jumps.size() || option < 0)
@@ -220,10 +220,19 @@ int CheckersBoard::movePiece(int option, int jump, int (&state)[8][8], int &turn
         if (option >= moves.size() || option < 0)
             return -1;
     }
-    
+    if (trueMove)
+        cout << "Move chosen: ";
     // Diagonal moves
     if (!jump){
         dataItem move = moves[option];
+        // Display chosen move
+        if (trueMove){
+            printCoords(move.y_initial, move.x_initial);
+            cout << " => ";
+            printCoords(move.y, move.x);
+            cout << "\n";
+        }
+
         state[move.x][move.y] = state[move.x_initial][move.y_initial];
         state[move.x_initial][move.y_initial] = 0;
         // moves.clear();
@@ -240,6 +249,8 @@ int CheckersBoard::movePiece(int option, int jump, int (&state)[8][8], int &turn
     int tmpPiece = 0;
     for (auto move : jumps[option]){
         if(i == 0){
+            if (trueMove)
+                printCoords(move.y_initial, move.x_initial);
             tmpPiece = state[move.x_initial][move.y_initial];
             state[move.x_initial][move.y_initial] = 0;
         }
@@ -247,10 +258,17 @@ int CheckersBoard::movePiece(int option, int jump, int (&state)[8][8], int &turn
         int skip_i, skip_j;
         skip_i = midPoint(move.x_initial, move.x);
         skip_j = midPoint(move.y_initial, move.y);
+        
+        if (trueMove){
+            cout << " => ";
+            printCoords(move.y, move.x);
+        }
 
         state[skip_i][skip_j] = 0; 
         i++;
     }
+    if (trueMove)
+        cout << "\n";
     
     dataItem move = jumps[option].back();
     state[move.x][move.y] = tmpPiece;

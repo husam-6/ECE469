@@ -59,7 +59,7 @@ class CheckersBoard {
         // Moves a piece
         int movePiece(int option, int jump);
         int movePiece(int option, int jump, int (&state)[8][8], int &turn,
-                      std::vector<std::vector<dataItem>> &jumps, std::vector<dataItem> &moves);
+                      std::vector<std::vector<dataItem>> &jumps, std::vector<dataItem> &moves, int trueMove = 0);
 
         // Check if no moves / no pieces are left
         int testEnd();

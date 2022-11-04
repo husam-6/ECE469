@@ -18,7 +18,7 @@ class Game {
             
             // Variable to indicate how many humans are playing
             // Computer vs Computer | Computer vs Human | Human vs Human
-            //          1           |         2         |       3
+            //          0           |         1         |       2
             int numHumans;
 
             // Upon initialization, which player starts
