@@ -177,15 +177,15 @@ int CheckersBoard::printOptions(vector<vector<dataItem>> &jumps, vector<dataItem
     return -1;
 }
 
-void CheckersBoard::makeKing(int i, int j, int (&state)[8][8]){
+void CheckersBoard::makeKing(int i, int j, int (&state)[8][8], int playerTurn){
     if (state[i][j] == -2 || state[i][j] == 2)
         return;
-    if (turn == -1){
+    if (playerTurn == -1){
         if (i == 0){
             state[i][j] *= 2; 
         }
     }
-    else if (turn == 1){
+    else if (playerTurn == 1){
         if (i == 7){
             state[i][j] *= 2;
         }
@@ -238,7 +238,7 @@ int CheckersBoard::movePiece(int option, int jump, int (&state)[8][8], int &turn
         // moves.clear();
 
         // Check if we can turn the piece into a king
-        makeKing(move.x, move.y, state);
+        makeKing(move.x, move.y, state, turn);
 
         turn = turn * -1; 
         return 0;
@@ -278,7 +278,7 @@ int CheckersBoard::movePiece(int option, int jump, int (&state)[8][8], int &turn
     // moves.clear();
 
     // Check if we can turn the piece into a king
-    makeKing(move.x, move.y, state);
+    makeKing(move.x, move.y, state, turn);
 
     // Change turn to the other player
     turn = turn * -1;

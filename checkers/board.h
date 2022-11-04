@@ -108,7 +108,7 @@ class CheckersBoard {
                          int playerTurn, int pos, std::vector<std::vector<dataItem>> &jumps);
 
             // Turn piece into a king
-            void makeKing(int i, int j, int (&state)[8][8]);
+            void makeKing(int i, int j, int (&state)[8][8], int playerTurn);
         
             // Int array bitmap for each square on the board
             // Assign 0 as empty
