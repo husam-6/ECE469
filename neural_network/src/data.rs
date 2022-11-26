@@ -1,6 +1,7 @@
 use std::fs::File;
-use std::io::{self, BufRead, Read};
+use std::io::{self, BufRead, Read, Write};
 use std::path::Path;
+use itertools::Itertools;
 
 // Helper function to read file line by line
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -47,5 +48,18 @@ pub fn read_data(file_name: &str) -> Data{
     Data {
         first,
         data,
+    }
+}
+
+
+impl Data{
+    pub fn print_data(&self, output: &str){
+        let mut file = std::fs::File::create(output).expect("create failed");
+        file.write_all(format!("{} {} {}\n", self.first[0], self.first[1], self.first[2]).as_bytes()).expect("Write Failed");
+        for i in 0..self.data.len(){
+            let rounded: Vec<String> = self.data[i].iter().map(|x| format!("{:.3}", x)).collect();
+            let joined = Itertools::join(&mut rounded.iter(), " ");
+            file.write_all((joined + "\n").as_bytes()).expect("Write Failed");
+        }
     }
 }
