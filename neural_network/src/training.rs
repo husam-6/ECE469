@@ -23,44 +23,34 @@ pub fn back_propagation(training_set: Data, mut weights: Data, epochs: &i32, lea
     let num_hidden = weights.first[1] as usize;
     
     // To initalize the neural network
-    let input = vec![0.0; num_inputs];
-    let hidden = vec![0.0; num_hidden];
-    let output = vec![0.0; num_outputs];
-
-    // The actual neural network nodes
-    let mut network = vec![input, hidden, output];
+    let mut network = vec![vec![0.0; num_inputs], vec![0.0; num_hidden], vec![0.0; num_outputs]];
 
     // Weight bias
     let w_b = -1.0;
 
     // Repeat training for number of epochs specified
     for _ in 0..(*epochs){
-        for i in 0..rows{
+        for example in 0..rows{
             let mut in_ = vec![vec![0.0; num_hidden], vec![0.0; num_outputs]];
-            
+
             // Copy training example into input nodes in the network
             for k in 0..num_inputs{
-                network[0][k] = training_set.data[i][k];
+                network[0][k] = training_set.data[example][k];
             } 
             
             // Forward prop
             let mut w_idx = 0;
             for l in 1..3{
                 for j in 0..network[l].len(){
-                    let mut sum = 0.0; 
-                    
                     // Multiply weight of link bw previous layer and current node * node value
-                    // println!("Layer: {}, bias weight {}", l, w[w_idx][0]);
-                    // if l == 2{
-                    //     println!("{:?}", w[w_idx]);
-                    // }
+                    let mut sum = 0.0; 
                     sum += w_b * w[w_idx][0];
                     for k in 0..network[l - 1].len(){
                         sum += w[w_idx][k + 1] * network[l - 1][k];
                     }
-                    in_[l - 1][j] = sum;    
+                    in_[l - 1][j] = sum;
                     network[l][j] = sigmoid(&sum);
-                    w_idx+=1; 
+                    w_idx+=1;
                 }
             }
             
@@ -69,17 +59,14 @@ pub fn back_propagation(training_set: Data, mut weights: Data, epochs: &i32, lea
             
             // Propagate deltas backwards - calculate error for output nodes
             for j in 0..network[2].len(){
-                delta[1][j] = d_sigmoid(&in_[1][j]) * (training_set.data[i][num_inputs + j] - network[2][j]);
+                delta[1][j] = d_sigmoid(&in_[1][j]) * (training_set.data[example][num_inputs + j] - network[2][j]);
             }
 
             // Calculate deltas for hidden nodes
             for i in 0..network[1].len(){
                 let mut sum = 0.0; 
-                
-                sum += w_b * w[i][0];
-                // println!("Bias weight: {}", w[i][0]);
                 for k in 0..network[2].len(){
-                    sum += w[i][k + 1] * delta[1][k];
+                    sum += w[num_hidden + k][i + 1] * delta[1][k];
                 }
                 delta[0][i] = d_sigmoid(&in_[0][i]) * sum;
             }
@@ -93,7 +80,7 @@ pub fn back_propagation(training_set: Data, mut weights: Data, epochs: &i32, lea
                         w[i][j] = w[i][j] + learning_rate * w_b * delta[l][n];
                         continue;
                     }
-                    w[i][j] = w[i][j] + learning_rate * network[l][n] * delta[l][n];
+                    w[i][j] = w[i][j] + learning_rate * network[l][j - 1] * delta[l][n];
                 }
                 // Increment layer
                 if i == num_hidden - 1{
