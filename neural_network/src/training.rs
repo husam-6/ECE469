@@ -44,26 +44,30 @@ pub fn back_propagation(training_set: Data, mut weights: Data, epochs: &i32, lea
             } 
             
             // Forward prop
+            let mut w_idx = 0;
             for l in 1..3{
                 for j in 0..network[l].len(){
                     let mut sum = 0.0; 
                     
                     // Multiply weight of link bw previous layer and current node * node value
-                    // println!("weights: {:?}", w);
-                    // println!("Size of weights: {}, size of nodes {}", w[l-1].len(), network[l - 1].len());
-                    sum += w_b * w[j][0];
+                    // println!("Layer: {}, bias weight {}", l, w[w_idx][0]);
+                    // if l == 2{
+                    //     println!("{:?}", w[w_idx]);
+                    // }
+                    sum += w_b * w[w_idx][0];
                     for k in 0..network[l - 1].len(){
-                        sum += w[j][k + 1] * network[l - 1][k];
+                        sum += w[w_idx][k + 1] * network[l - 1][k];
                     }
                     in_[l - 1][j] = sum;    
                     network[l][j] = sigmoid(&sum);
+                    w_idx+=1; 
                 }
             }
             
             // Initialize errors... Don't need error for input nodes
             let mut delta = vec![vec![0.0; num_hidden], vec![0.0; num_outputs]];
             
-            // Propagate deltas backwards - loop through output nodes and calculate loss
+            // Propagate deltas backwards - calculate error for output nodes
             for j in 0..network[2].len(){
                 delta[1][j] = d_sigmoid(&in_[1][j]) * (training_set.data[i][num_inputs + j] - network[2][j]);
             }
@@ -73,6 +77,7 @@ pub fn back_propagation(training_set: Data, mut weights: Data, epochs: &i32, lea
                 let mut sum = 0.0; 
                 
                 sum += w_b * w[i][0];
+                // println!("Bias weight: {}", w[i][0]);
                 for k in 0..network[2].len(){
                     sum += w[i][k + 1] * delta[1][k];
                 }
@@ -80,18 +85,23 @@ pub fn back_propagation(training_set: Data, mut weights: Data, epochs: &i32, lea
             }
             
             // Update each weight
-            for l in 0..delta.len(){
-                for n in 0..delta[l].len(){
-                    for i in 0..w.len(){
-                        for j in 0..w[i].len(){
-                            if i == 0{
-                                w[i][j] = w[i][j] + learning_rate * w_b * delta[l][n];
-                                continue;
-                            }
-                            w[i][j] = w[i][j] + learning_rate * network[l][i - 1] * delta[l][n];
-                        }
+            let mut l = 0;
+            let mut n = 0;  
+            for i in 0..w.len(){
+                for j in 0..w[i].len(){
+                    if j == 0{
+                        w[i][j] = w[i][j] + learning_rate * w_b * delta[l][n];
+                        continue;
                     }
+                    w[i][j] = w[i][j] + learning_rate * network[l][n] * delta[l][n];
                 }
+                // Increment layer
+                if i == num_hidden - 1{
+                    l+=1;
+                    n=0;
+                    continue; 
+                }
+                n+=1;
             }
         }
     }
