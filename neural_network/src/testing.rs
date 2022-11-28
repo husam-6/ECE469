@@ -169,7 +169,6 @@ pub fn print_results(output: &str, res: Vec<Confusion>){
     let mut micro_sum = Confusion { ..Default::default() };
 
     // Calculate and print metrics for each output node
-    let mut tmp: f64 = 0.0;
     for i in 0..res.len(){
         // Calculated metrics
         let c_metrics = res[i].calc_metrics();
@@ -177,7 +176,6 @@ pub fn print_results(output: &str, res: Vec<Confusion>){
         let values = res[i].join();
         let metrics = c_metrics.join();
         file.write_all(format!("{} {}\n", values, metrics).as_bytes()).expect("Write Failed");
-        tmp += c_metrics.f1;
         macro_sum.add(c_metrics);
         micro_sum.add(res[i]);
     }
@@ -189,7 +187,6 @@ pub fn print_results(output: &str, res: Vec<Confusion>){
         micro_arr[i] = micro_arr[i] / res.len() as f64;
         macro_arr[i] = macro_arr[i] / res.len() as f64;
     }
-    println!("{}", tmp / 4.0);
     macro_sum.update(macro_arr);
     let micro = micro_sum.calc_metrics();
 
