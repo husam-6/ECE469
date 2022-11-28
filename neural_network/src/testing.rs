@@ -187,6 +187,7 @@ pub fn print_results(output: &str, res: Vec<Confusion>){
         micro_arr[i] = micro_arr[i] / res.len() as f64;
         macro_arr[i] = macro_arr[i] / res.len() as f64;
     }
+    macro_arr[3] = (2.0 * macro_arr[1] * macro_arr[2]) / (macro_arr[1] + macro_arr[2]);
     macro_sum.update(macro_arr);
     let micro = micro_sum.calc_metrics();
 
