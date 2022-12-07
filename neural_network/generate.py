@@ -10,20 +10,28 @@ from sklearn.model_selection import train_test_split
 
 
 # %% Read and parse input files
-TRAIN_FILE = "./samples/SAheart.txt"
-TEST_FILE = "./samples/SAheart_test.txt"
-INIT_FILE = "./samples/SAheart_init.txt"
-
-df = pd.read_csv("./samples/SAheart.csv").drop(["row.names", "famhist"], axis=1)
-train, test = train_test_split(df, test_size=0.2, random_state=31415)
-np.savetxt(TRAIN_FILE, train.values, fmt='%0.3f')
-np.savetxt(TEST_FILE, test.values, fmt='%0.3f')
+TRAIN_FILE = "./samples/bank.txt"
+TEST_FILE = "./samples/bank_test.txt"
+INIT_FILE = "./samples/bank_init.txt"
+READ_FILE = "./samples/data_banknote_authentication.txt"
+df = pd.read_csv(READ_FILE, header=None)
+df = df.sample(frac=1)
 
 
 # %% Add initial line with number of examples, number if inputs, and number of outputs
 num_inputs = df.columns.values.shape[0] - 1
 num_outputs = 1
-num_hidden = 41
+num_hidden = 5
+
+fmt = ['%0.3f' for x in range(num_inputs)]
+fmt.append('%d')
+fmt = ' '.join(fmt)
+# %%
+train, test = train_test_split(df, test_size=0.2, random_state=31415)
+np.savetxt(TRAIN_FILE, train.values, fmt=fmt)
+np.savetxt(TEST_FILE, test.values, fmt=fmt)
+
+
 
 with open(TRAIN_FILE, 'r+') as f:
     content = f.read()
@@ -44,7 +52,8 @@ def xavier_init(input_dim, output_dim, rng):
     Obtained from TensorFlow Documentation
     """
     xavier_lim = np.sqrt(6.)/np.sqrt(input_dim + output_dim)
-    weight_vals = rng.uniform(size=(input_dim, output_dim), low=-xavier_lim, high=xavier_lim)
+    # weight_vals = rng.uniform(size=(input_dim, output_dim), low=-xavier_lim, high=xavier_lim)
+    weight_vals = rng.uniform(size=(input_dim, output_dim), low=-0, high=1)
     return weight_vals
 
 np_rng = np.random.default_rng(31415)
